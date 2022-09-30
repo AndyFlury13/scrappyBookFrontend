@@ -115,7 +115,7 @@ const createTreemapDefs = () => {
       .attr('y', () => 5)
       .attr('patternUnits', 'userSpaceOnUse')
       .append('svg:image')
-      .attr('href', `/treemapPics/modified/${entry.name}_modified.png`)
+      .attr('href', `/treeMapPics/modified/${entry.name}_modified.png`)
       .attr('height', () => imageLength * entry.sizeModifier)
       .attr('width', () => imageLength * entry.sizeModifier);
   });

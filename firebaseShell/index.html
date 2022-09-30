@@ -1,15 +1,98 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <script type="text/javascript" src="googleAuth.js"></script>
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+            import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-analytics.js";
+            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
+            import { doc, getDoc, getFirestore } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore.js";
+            const firebaseConfig = {
+              apiKey: "AIzaSyA9NRou3rxQKTmXFG5Cfjt7MuFVjbKKc0k",
+              authDomain: "scrappybook-1c62c.firebaseapp.com",
+              projectId: "scrappybook-1c62c",
+              storageBucket: "scrappybook-1c62c.appspot.com",
+              messagingSenderId: "243358959783",
+              appId: "1:243358959783:web:d1342a46babd657d0e3382",
+              measurementId: "G-54W0TJJYHJ"
+            };
+          
+            const authenticate = () => gapi.auth2.getAuthInstance()
+                .signIn({ scope: 'https://www.googleapis.com/auth/photoslibrary https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata' })
+                .then(
+                    () => { console.log('Sign-in successful'); },
+                    (err) => { console.error('Error signing in', err); },
+                );
+
+            const loadClient = async (credentials) => {
+                gapi.client.setApiKey(credentials.gpAPIKey);
+                return gapi.client.load('https://photoslibrary.googleapis.com/$discovery/rest?version=v1').then(
+                    () => { loadIconPhotos(); },
+                    (err) => {
+                        console.error('Error loading GAPI client for API', err);
+                    },
+                );
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
+            var provider = new GoogleAuthProvider();
+            const auth = getAuth(app);
+            signInWithPopup(auth, provider).then(
+                (result) => {
+                    // console.log(result);
+                    /** @type {firebase.auth.OAuthCredential} */
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    const token = credential.accessToken;
+                    // The signed-in user info.
+                    const user = result.user;
+                    // console.log(token);
+                    // ...
+                    const db = getFirestore(app);
+                    const docRef = doc(db, "topSneaky", "secretsSHHHH");
+                    const docSnap = getDoc(docRef);
+                
+                    docSnap.then((doc) => {
+                        const credentials = doc.data()
+                        gapi.load('client:auth2', () => {
+                            gapi.auth2.init({ client_id: credentials.gpClientID });
+                            authenticate().then(() => {
+                                loadClient(credentials);
+                            });
+                        });
+                        
+
+                    }, (err) => {
+                        console.log(err);
+                    });
+
+                }).catch(
+                    (error) => {
+                    // Handle Errors here.
+                    console.log(error);
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    // The email of the user's account used.
+                    const email = error.customData.email;
+                    // The AuthCredential type that was used.
+                    const credential = GoogleAuthProvider.credentialFromError(error);
+                });
+            
+            
+          </script>
         <link href="style.css" rel="stylesheet" type="text/css">
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://apis.google.com/js/api.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+<!--         
+        <script src="/__/firebase/init.js?useEmulator=true"></script> -->
+        <script src="firebaseAuth.js" type="text/javascript"></script>
+        
     </head>
 
     <body>
-
-        <div class="authenticateSection">
+        <!-- <div class="authenticateSection">
 
             
             <div id="authenticateButton">First off, click here to sign-in with Google</div>
@@ -32,14 +115,14 @@
                         <div class="loader-line"></div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- taken from https://codepen.io/atunnecliffe/pen/gpKzQw -->
-            <div class="hdPwdInput">
+            <!-- <div class="hdPwdInput">
                 <input type="text" name="name" class="question" id="nme" required autocomplete="off" />
                 <label for="nme"><span>What's Andrew's Facebook nickname for you?</span></label>
             </div>
-        </div>  
+        </div>   -->
         <article class="scroller">
             
             <section class="overallStatsSection">
@@ -194,29 +277,5 @@
         <script src="/stats.js" type="text/javascript"></script>
         <script src="/top3Stats.js" type="text/javascript"></script>
         <script src="/googleAuth.js" type="text/javascript"></script>
-
-        <script type="module">
-            // Import the functions you need from the SDKs you need
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
-            import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-analytics.js";
-            // TODO: Add SDKs for Firebase products that you want to use
-            // https://firebase.google.com/docs/web/setup#available-libraries
-          
-            // Your web app's Firebase configuration
-            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-            const firebaseConfig = {
-              apiKey: "AIzaSyDaX3x6k_XMswIgzf9qez9JOw2PXVglvoI",
-              authDomain: "scrappybookstatichost.firebaseapp.com",
-              projectId: "scrappybookstatichost",
-              storageBucket: "scrappybookstatichost.appspot.com",
-              messagingSenderId: "161453578997",
-              appId: "1:161453578997:web:c27e689b02762e239e03bc",
-              measurementId: "G-KYV48L2C6Q"
-            };
-          
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const analytics = getAnalytics(app);
-          </script>
     </body>
 </html>
