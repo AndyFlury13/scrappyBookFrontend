@@ -84,7 +84,7 @@ const getCombinedPicNum = (d) => {
 };
 // The TS graph is the most complicated one, so we define its own processing function
 const processTSData = (takerSubjectData) => new Promise((resolve) => {
-    d3.csv('/scripts/data/subjectTaker.csv', (subjectTakerData) => {
+    d3.csv('/data/subjectTaker.csv', (subjectTakerData) => {
         const networkData = { nodes: [], links: [] };
         NAMES.forEach((name, nameI) => {
             networkData.nodes.push({
@@ -290,7 +290,7 @@ const clearNetworkStats = (clientName) => {
     });
 };
 export const drawNetwork = (clientName, dataFileName, svg, pictureDivName) => {
-    d3.csv(`/scripts/data/${dataFileName}.csv`, (data) => {
+    d3.csv(`/data/${dataFileName}.csv`, (data) => {
         const processPromise = clientName === 'totalTS'
             ? processTSData(data)
             : processData(clientName, data);

@@ -30,7 +30,7 @@ export const columnThreeColors = [
 ];
 export const drawTop3Stats = (clientName, dataFileName, rankingName, colors) => {
     console.log(clientName);
-    d3.csv(`/scripts/data/${dataFileName}.csv`, (data) => {
+    d3.csv(`/data/${dataFileName}.csv`, (data) => {
         const top3 = processTop3(data, clientName);
         top3.forEach((cellData, colorIndex) => {
             const rankingSpot = d3.select(`.${rankingName}`)

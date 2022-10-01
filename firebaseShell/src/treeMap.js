@@ -146,7 +146,7 @@ const getColor = (name) => {
 };
 // read json data
 export const drawTreeMap = (clientName) => {
-    d3.csv('/scripts/data/subjectCategory.csv', (data) => {
+    d3.csv('/data/subjectCategory.csv', (data) => {
         const clientData = {
             children: [],
         };

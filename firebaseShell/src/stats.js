@@ -29,7 +29,7 @@ function counterControl(target, number) {
     });
 }
 const displayStats = (clientName) => {
-    $.getJSON('/scripts/data/overallStats.json', (data) => {
+    $.getJSON('/data/overallStats.json', (data) => {
         $('.introBlurb0').html(`Hi ${clientName}! Over the past year, we uploaded <span class='userNumBar0'></span><span class='userImgNumBar'></span>`
             + '</span> pictures to the Hilledwight photo drive.').promise().done(() => {
             $('.introBlurb0').fadeIn(4000, () => {

@@ -55,8 +55,8 @@ export const drawBarGraph = (clientName, subjectOrTaker) => {
         $('.slide-in-out-subject').toggleClass('slide');
         CURRENT_SUBJECT_OR_TAKER = subjectOrTaker;
     }
-    d3.csv('/scripts/data/pictureBySubjectByMonth.csv', (asPhotoTakerData) => {
-        d3.csv('/scripts/data/pictureOfSubjectByMonth.csv', (asSubjectData) => {
+    d3.csv('/data/pictureBySubjectByMonth.csv', (asPhotoTakerData) => {
+        d3.csv('/data/pictureOfSubjectByMonth.csv', (asSubjectData) => {
             const clientData = [];
             for (let ptDataI = 0; ptDataI < asPhotoTakerData.length; ptDataI += 1) {
                 const ptD = asPhotoTakerData[ptDataI];

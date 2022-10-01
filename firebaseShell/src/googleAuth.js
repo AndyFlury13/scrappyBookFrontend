@@ -64,6 +64,18 @@ const loadGraphs = (clientName) => {
     });
 };
 
+const emailToClientName = {
+    'andrewflury@berkeley.edu':'me',
+    'shirleywang57@berkeley.edu': 'shirleyWhirley',
+    'justintwong@berkeley.edu': 'yuppie',
+    'ericgai@berkeley.edu': 'dumbestKid',
+    'victorjann@berkeley.edu': 'bugBoy',
+    'katherine.wei@berkeley.edu': 'girlBoss',
+    'jiuchang@berkeley.edu': 'jiusus',
+    'chinmayee_vw@berkeley.edu': 'chimu',
+    'ezhang10@berkeley.edu': 'emily'
+}
+
 
 const loadClient = (credentials, clientName) => {
     gapi.client.setApiKey(credentials.gpAPIKey);
@@ -91,8 +103,9 @@ $('.fbAuthenticateBtn').on('click', () => {
     $('.fbAuthenticateBtn').fadeOut("slow", () => {
         $('.loader').fadeIn("slow");
         signInWithPopup(auth, provider).then((result) => {
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const token = credential.accessToken;
+            console.log(result);
+            // const credential = GoogleAuthProvider.credentialFromResult(result);
+            const clientName = emailToClientName[result.user.email];
             const db = getFirestore(app);
             const docRef = doc(db, "topSneaky", "secretsSHHHH");
             const docSnap = getDoc(docRef);
@@ -101,11 +114,12 @@ $('.fbAuthenticateBtn').on('click', () => {
                 $('.loader').fadeOut("slow", () => {
                     $('.gpAuthenticateBtn').fadeIn("slow");
                     $('.gpAuthenticateBtn').on('click', () => {
+                        $('.gpAuthenticateBtn').fadeOut("slow");
                         $('.loader').fadeIn();
                         gapi.load('client:auth2', () => {
                             gapi.auth2.init({ client_id: credentials.gpClientID });
                             authenticate().then(() => {
-                                loadClient(credentials);
+                                loadClient(credentials, clientName);
                             });
                         });  
                     });
