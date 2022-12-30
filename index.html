@@ -67,8 +67,8 @@
             <section class="monthSection">
                 <div id="monthGraphAndButtons">
                     <div class="monthGraphButtons">
-                        <div id = 'monthGraphPhotoTakerButton' onclick="drawBarGraph(CLIENT_NAME,'photoTaker')">As the photographer<span class='slide-in-out-photoTaker'></span></div>
-                        <div id = 'monthGraphPhotoSubjectButton' onclick="drawBarGraph(CLIENT_NAME, 'subject')">As the subject<span class='slide-in-out-subject'></span></div>
+                        <div id = 'monthGraphPhotoTakerButton'>As the photographer<span class='slide-in-out-photoTaker'></span></div>
+                        <div id = 'monthGraphPhotoSubjectButton'>As the subject<span class='slide-in-out-subject'></span></div>
                     </div>
                     <div id="monthGraph"></div>
                 </div>
@@ -107,10 +107,11 @@
             <section class="questionSection">
                 Here are some of the questions that led me to this project:
                 <ol>
-                <li>Which pair in our friend group took the most pictures of each other?</li>
-                <li>which pair in our friend group was most photographed together?</li>
-                <li>Did Eric ever upload any pictures to this photodrive??</li>
+                    <li>Which pair in our friend group took the most pictures of each other?</li>
+                    <li>which pair in our friend group was most photographed together?</li>
+                    <li>Did Eric ever upload any pictures to this photodrive??</li>
                 </ol>
+                
                
             </ol>
             You can send me your guesses: <br/>
@@ -159,6 +160,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="questionSubmitBtn">Submit</div>
             </section>
             <section class="totalPWSection">
                 <div id="totalPWGraph"></div>
@@ -183,7 +185,7 @@
             </section>
         </article>
         <script type="module" src="/src/imageLoader.js"></script>
-        <script type="module" src="/src/dropDown.js"></script>
+        <script type="module" src="/src/questions.js"></script>
         <script type="module" src="/src/monthGraph.js"></script>
         <script type="module" src="/src/networkGraphs.js"></script>
         <script type="module" src="/src/treeMap.js"></script>

@@ -1,18 +1,20 @@
 import { drawTreeMap } from "./treeMap.js";
-import { ICON_DATA } from "./networkGraphs.js";
+import { 
+    clientPicturedWithSVG, 
+    clientTakerSubjectSVG, 
+    drawNetwork, 
+    ICON_DATA,
+    totalPWSVG,
+    totalTSSVG
+} from "./networkGraphs.js";
+import { displayStats } from './stats.js';
 import { drawBarGraph } from "./monthGraph.js";
-import { drawNetwork } from "./networkGraphs.js";
-import { clientPicturedWithSVG } from "./networkGraphs.js";
-import { clientTakerSubjectSVG } from "./networkGraphs.js";
-import { totalPWSVG } from "./networkGraphs.js";
-import { totalTSSVG } from "./networkGraphs.js";
-import { drawTop3Stats } from "./top3Stats.js";
-import { columnOneColors } from "./top3Stats.js";
-import { columnTwoColors } from "./top3Stats.js";
-import { columnThreeColors } from "./top3Stats.js";
+import { drawTop3Stats, columnOneColors, columnTwoColors, columnThreeColors } from "./top3Stats.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
 import { doc, getDoc, getFirestore } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-storage.js";
+
 
 const authenticate = () => gapi.auth2.getAuthInstance()
 .signIn({ scope: 'https://www.googleapis.com/auth/photoslibrary https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata' })
@@ -40,15 +42,20 @@ const loadGraphs = (clientName) => {
                             url: mediaItem.baseUrl,
                         });
                     });
-                    drawNetwork(clientName, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith');
-                    drawNetwork(clientName, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject');
-                    drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW');
-                    drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS');
-                    drawTop3Stats(clientName, 'picturedWith', 'picturedWithTop3', columnOneColors);
-                    drawTop3Stats(clientName, 'subjectTaker', 'asSubjectTop3', columnTwoColors);
-                    drawTop3Stats(clientName, 'takerSubject', 'asPhototakerTop3', columnThreeColors);
-                    drawTreeMap(clientName);
-                    drawBarGraph(clientName, 'photoTaker');
+
+                    const storage = getStorage(app);
+                    displayStats(clientName, storage);
+
+                    drawTop3Stats(clientName, 'picturedWith', 'picturedWithTop3', columnOneColors, storage);
+                    drawTop3Stats(clientName, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage);
+                    drawTop3Stats(clientName, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage);
+                    drawBarGraph(clientName, 'photoTaker', storage);
+                    drawTreeMap(clientName, storage);
+                    drawNetwork(clientName, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage);
+                    drawNetwork(clientName, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage);
+                    drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage);
+                    drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage);
+                    
                     // TODO
                     while ('nextPageToken' in mediaResponse) {
                         console.log('todo');
@@ -98,28 +105,35 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 var provider = new GoogleAuthProvider();
 const auth = getAuth(app);
-
+console.log('test');
 $('.fbAuthenticateBtn').on('click', () => {
+    console.log('emulator test');
     $('.fbAuthenticateBtn').fadeOut("slow", () => {
         $('.loader').fadeIn("slow");
         signInWithPopup(auth, provider).then((result) => {
             console.log(result);
-            // const credential = GoogleAuthProvider.credentialFromResult(result);
             const clientName = emailToClientName[result.user.email];
-            const db = getFirestore(app);
+            const db = getFirestore(app, {
+                experimentalAutoDetectLongPolling: true
+            });
             const docRef = doc(db, "topSneaky", "secretsSHHHH");
             const docSnap = getDoc(docRef);
             docSnap.then((doc) => {
                 const credentials = doc.data()
                 $('.loader').fadeOut("slow", () => {
-                    $('.gpAuthenticateBtn').fadeIn("slow");
+                    $('.gpAuthenticateBtn').fadeIn(3000);
                     $('.gpAuthenticateBtn').on('click', () => {
-                        $('.gpAuthenticateBtn').fadeOut("slow");
-                        $('.loader').fadeIn();
+                        $('.gpAuthenticateBtn').fadeOut(1000, () => {
+                            $('.loader').fadeIn();
+                        });
+                        
                         gapi.load('client:auth2', () => {
                             gapi.auth2.init({ client_id: credentials.gpClientID });
                             authenticate().then(() => {
                                 loadClient(credentials, clientName);
+                                $('.authenticateSection').fadeOut('fast', () => {
+                                    $('.scroller').fadeIn("slow");
+                                });
                             });
                         });  
                     });

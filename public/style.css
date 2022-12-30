@@ -15,7 +15,8 @@ body {
     overflow-y: scroll;
     scroll-snap-type: y mandatory;
     background-color: #333;
-    color: white
+    color: white;
+    display:none;
 }
 
 .scroller section {
@@ -47,7 +48,6 @@ body {
 }
 
 .fbAuthenticateBtn { 
-    /* color: white; */
     border-bottom: 3px solid rgba(66, 133, 244, 1);
 }
 
@@ -587,7 +587,7 @@ span {
 }
 
 .questionSection {
-    font-size: 30px;
+    font-size: 26px;
     padding:30px;
     position:relative;
 }

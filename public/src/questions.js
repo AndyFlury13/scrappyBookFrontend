@@ -66,3 +66,7 @@ createDropDown('pw2', DROPDOWN_NAMES_AND_COLORS);
 createDropDown('st1', DROPDOWN_NAMES_AND_COLORS);
 createDropDown('st2', DROPDOWN_NAMES_AND_COLORS);
 createDropDown('eric', YES_NO_COLORS);
+
+$('.questionSubmitBtn').on('click', () => {
+    
+});
