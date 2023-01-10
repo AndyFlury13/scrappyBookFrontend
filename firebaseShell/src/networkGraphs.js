@@ -5,7 +5,7 @@ import {
     PROMISES,
     slideshow 
 } from "./imageLoader.js";
-import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-storage.js";
+import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 const networkMargin = {
     top: 0, right: 0, bottom: 0, left: 0,
@@ -294,7 +294,7 @@ const clearNetworkStats = (clientName) => {
     });
 };
 export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, storage) => {
-    const reference = ref(storage, `data/${dataFileName}.csv`);
+    const reference = storageRef(storage, `data/${dataFileName}.csv`);
     getDownloadURL(reference)
         .then((url) => {
             d3.csv(url, (err, data) => {

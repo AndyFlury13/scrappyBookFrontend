@@ -10,10 +10,10 @@ import {
 import { displayStats } from './stats.js';
 import { drawBarGraph } from "./monthGraph.js";
 import { drawTop3Stats, columnOneColors, columnTwoColors, columnThreeColors } from "./top3Stats.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
-import { doc, getDoc, getFirestore } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-storage.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import { doc, getDocFromServer, getFirestore, getDocs, collection } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 
 const authenticate = () => gapi.auth2.getAuthInstance()
@@ -28,6 +28,7 @@ const loadGraphs = (clientName) => {
     return gapi.client.photoslibrary.albums.list({})
         .then((albumsResponse) => {
         const { albums } = albumsResponse.result;
+        console.log(albums);
         albums.forEach((album) => {
             if (album.title === 'iconPhotos') { // load icon album
                 return gapi.client.photoslibrary.mediaItems.search({
@@ -36,6 +37,7 @@ const loadGraphs = (clientName) => {
                 }).then((mediaResponse) => {
                     // do stuff here
                     const { mediaItems } = mediaResponse.result;
+                    console.log(mediaItems);
                     mediaItems.forEach((mediaItem) => {
                         ICON_DATA.push({
                             name: mediaItem.description,
@@ -44,6 +46,8 @@ const loadGraphs = (clientName) => {
                     });
 
                     const storage = getStorage(app);
+                    console.log(storage);
+                    console.log(app);
                     displayStats(clientName, storage);
 
                     drawTop3Stats(clientName, 'picturedWith', 'picturedWithTop3', columnOneColors, storage);
@@ -105,28 +109,45 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 var provider = new GoogleAuthProvider();
 const auth = getAuth(app);
-console.log('test');
+
 $('.fbAuthenticateBtn').on('click', () => {
     console.log('emulator test');
     $('.fbAuthenticateBtn').fadeOut("slow", () => {
-        $('.loader').fadeIn("slow");
-        signInWithPopup(auth, provider).then((result) => {
-            console.log(result);
-            const clientName = emailToClientName[result.user.email];
-            const db = getFirestore(app, {
-                experimentalAutoDetectLongPolling: true
-            });
-            const docRef = doc(db, "topSneaky", "secretsSHHHH");
-            const docSnap = getDoc(docRef);
-            docSnap.then((doc) => {
-                const credentials = doc.data()
-                $('.loader').fadeOut("slow", () => {
+        // $('.loader').fadeIn("slow");
+        // signInWithPopup(auth, provider).then(async (result) => {
+            // console.log(result);
+            // console.log(result.user.email);
+            // const clientName = emailToClientName[result.user.email];
+            // console.log(clientName);
+            // const db = getFirestore(app, {
+                // 'experimentalForceLongPolling': true
+            // });
+
+            // const querySnapshot = await getDocs(collection(db, "cities"));
+            // querySnapshot.forEach((doc) => {
+            // doc.data() is never undefined for query doc snapshots
+                // console.log(doc.id, " => ", doc.data());
+            // });
+            console.log('1');
+            // const docRef = doc(db, "topSneaky", "secretsSHHHH");
+            // console.log('2');
+            // const docSnap = getDocFromServer(docRef);
+            // console.log('3');
+            // console.log(docSnap);
+            // docSnap.then((doc) => {
+                // console.log('4');
+                const credentials = {
+                    'gpClientID':'830400570958-97dlsn4388cdurn04deasb00fui1ouq3.apps.googleusercontent.com',
+                    'gpAPIKey': 'AIzaSyAEwGaqEu8QpFsZKaJQSzn1l-jCtgkknsY'
+                };
+                console.log(credentials);
+                // $('.loader').fadeOut("slow", () => {
                     $('.gpAuthenticateBtn').fadeIn(3000);
                     $('.gpAuthenticateBtn').on('click', () => {
-                        $('.gpAuthenticateBtn').fadeOut(1000, () => {
-                            $('.loader').fadeIn();
-                        });
-                        
+                        // $('.gpAuthenticateBtn').fadeOut(1000, () => {
+                        //     $('.loader').fadeIn();
+                        // });
+                        const clientName= 'me';
                         gapi.load('client:auth2', () => {
                             gapi.auth2.init({ client_id: credentials.gpClientID });
                             authenticate().then(() => {
@@ -136,10 +157,10 @@ $('.fbAuthenticateBtn').on('click', () => {
                                 });
                             });
                         });  
-                    });
-                });
+                    // });
+                // });
                 
-            });
+            // });
         });
     });
 });

@@ -1,5 +1,5 @@
 import { CIRCLES_STROKE_WIDTH } from "./networkGraphs.js";
-import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-storage.js";
+import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 
 const processTop3 = (data, clientName) => {
@@ -31,7 +31,7 @@ export const columnThreeColors = [
     '#ff8600',
 ];
 export const drawTop3Stats = (clientName, dataFileName, rankingName, colors, storage) => {
-    const reference = ref(storage, `data/${dataFileName}.csv`);
+    const reference = storageRef(storage, `data/${dataFileName}.csv`);
     getDownloadURL(reference)
         .then((url) => {
             d3.csv(url, (err, data) => {

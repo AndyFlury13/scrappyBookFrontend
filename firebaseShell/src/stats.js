@@ -1,4 +1,4 @@
-import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-storage.js";
+import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 function counterControl(target, number) {
     const numberString = number.toString();
@@ -31,7 +31,8 @@ function counterControl(target, number) {
     });
 }
 export const displayStats = (clientName, storage) => {
-    const reference = ref(storage, 'data/overallStats.json');
+    console.log(storage);
+    const reference = storageRef(storage, 'data/overallStats.json');
     getDownloadURL(reference)
         .then((url) => {
             $.getJSON(url, (data) => {

@@ -4,7 +4,7 @@ import { ON_CONTAINER } from "./imageLoader.js";
 import { IMG_CHANGE_CONTAINER } from "./imageLoader.js";
 import { DISPLAYED_TARGETS } from "./imageLoader.js";
 import { PROMISES } from "./imageLoader.js";
-import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-storage.js";
+import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 const MONTHS = [
     { name: 'August', color: '#ff8600' },
@@ -72,7 +72,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage) => {
         $('.slide-in-out-subject').toggleClass('slide');
         CURRENT_SUBJECT_OR_TAKER = subjectOrTaker;
     }
-    const asPTReference = ref(storage, 'data/pictureBySubjectByMonth.csv');
+    const asPTReference = storageRef(storage, 'data/pictureBySubjectByMonth.csv');
     getDownloadURL(asPTReference)
         .then((ptUrl) => {
             d3.csv(ptUrl, (phototakerErr, asPhotoTakerData) => {
@@ -80,7 +80,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage) => {
                     console.error(phototakerErr);
                     return;
                 }
-                const asSubjectReference = ref(storage, 'data/pictureOfSubjectByMonth.csv');
+                const asSubjectReference = storageRef(storage, 'data/pictureOfSubjectByMonth.csv');
                 getDownloadURL(asSubjectReference)
                     .then((subjectUrl) => {
                         d3.csv(subjectUrl, (asSubjectErr, asSubjectData) => {

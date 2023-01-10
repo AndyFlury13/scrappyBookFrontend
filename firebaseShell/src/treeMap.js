@@ -5,7 +5,7 @@ import {
     PROMISES,
     slideshow 
 } from "./imageLoader.js";
-import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-storage.js";
+import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 
 const treeMapWidth = 750;
@@ -105,7 +105,7 @@ const createTreemapDefs = (storage) => {
     const definitionSVG = body.append('svg');
     const defs = definitionSVG.append('svg:defs');
     CATEGORIES.forEach((entry) => {
-        const treeMapIconRef = ref(storage, `treeMapPics/${entry.name}_modified.png`);
+        const treeMapIconRef = storageRef(storage, `treeMapPics/${entry.name}_modified.png`);
         getDownloadURL(treeMapIconRef)
             .then((url) => {
                 defs.append('svg:pattern')
@@ -155,11 +155,9 @@ const getColor = (name) => {
 };
 // read json data
 export const drawTreeMap = (clientName, storage) => {
-    console.log('wut');
-    const reference = ref(storage, 'data/subjectCategory.csv');
+    const reference = storageRef(storage, 'data/subjectCategory.csv');
     getDownloadURL(reference)
         .then((url) => {
-            console.log('sadge');
             d3.csv(url, (err, data) => {
                 if (err) {
                     console.error(err);
