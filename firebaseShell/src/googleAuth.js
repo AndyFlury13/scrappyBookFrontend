@@ -137,8 +137,8 @@ $('.fbAuthenticateBtn').on('click', () => {
             // docSnap.then((doc) => {
                 // console.log('4');
                 const credentials = {
-                    'gpClientID':'830400570958-97dlsn4388cdurn04deasb00fui1ouq3.apps.googleusercontent.com',
-                    'gpAPIKey': 'AIzaSyAEwGaqEu8QpFsZKaJQSzn1l-jCtgkknsY'
+                    'gpClientID':'830400570958-cjqakcuq9hcidb5btmmikoe4bjfpjkrn.apps.googleusercontent.com',
+                    'gpAPIKey': 'API key: AIzaSyC7vraOEbwI66xzhkqe5RxfSV82PjF45qI'
                 };
                 console.log(credentials);
                 // $('.loader').fadeOut("slow", () => {
