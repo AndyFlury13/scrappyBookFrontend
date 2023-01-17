@@ -31,7 +31,6 @@ function counterControl(target, number) {
     });
 }
 export const displayStats = (clientName, storage) => {
-    console.log(storage);
     const reference = storageRef(storage, 'data/overallStats.json');
     getDownloadURL(reference)
         .then((url) => {

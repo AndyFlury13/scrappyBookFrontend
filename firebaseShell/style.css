@@ -51,16 +51,14 @@ body {
     border-bottom: 3px solid rgba(66, 133, 244, 1);
 }
 
-.gpAuthenticateBtn {
-    border-bottom: 3px solid rgba(15, 157, 88, 1);
-    display: none;
-}
-
 .authenticateBtn:hover {
     opacity: .5;
     transition: opacity .2s ease-in-out;
 }
 
+.gpAuthenticateBtn {
+    display: none;
+}
 
 
 .loader {

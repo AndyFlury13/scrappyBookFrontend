@@ -2,11 +2,14 @@
 <html>
     <head>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://apis.google.com/js/api.js"></script>
+        <script async defer src="https://apis.google.com/js/api.js"></script>
         <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
-        <link rel="stylesheet" href="style.css">
-        <script type="module" src="/src/googleAuth.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script type="module" src="/src/googleAuth.js"></script>
+        <script async defer src="https://accounts.google.com/gsi/client"></script>
+        
+        
+        <link rel="stylesheet" href="style.css">
         
     </head>
 
@@ -35,7 +38,24 @@
                     </div>
                 </div>
             </div>
-            <div class="gpAuthenticateBtn authenticateBtn">Now sign-in again to give my API consent to see our pictures</div>
+
+            <div class="authenticateBtn gpAuthenticateBtn">Authorize</div>
+            <!-- <div id="g_id_onload"
+                data-client_id="830400570958-cjqakcuq9hcidb5btmmikoe4bjfpjkrn.apps.googleusercontent.com"
+                data-context="signin"
+                data-ux_mode="popup"
+                data-callback="gapiResponseHandler"
+                data-auto_prompt="false">
+            </div>
+
+            <div class="g_id_signin"
+                data-type="standard"
+                data-shape="pill"
+                data-theme="outline"
+                data-text="signin_with"
+                data-size="large"
+                data-logo_alignment="left">
+            </div> -->
         </div>
 
         <article class="scroller">
@@ -104,7 +124,7 @@
                 <div id="clientPicturedWithGraph"></div>
             </section>
 
-            <section class="questionSection">
+            <!-- <section class="questionSection">
                 Here are some of the questions that led me to this project:
                 <ol>
                     <li>Which pair in our friend group took the most pictures of each other?</li>
@@ -161,7 +181,7 @@
                     </div>
                 </div>
                 <div class="questionSubmitBtn">Submit</div>
-            </section>
+            </section> -->
             <section class="totalPWSection">
                 <div id="totalPWGraph"></div>
                 <div class="networkStats PW">
