@@ -81,9 +81,8 @@ const processTarget = (targetName, targetData, clientName, networkData) => {
     }
 };
 const getCombinedPicNum = (d) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
-    const tsLength = (_d = (_c = (_b = (_a = d.takerSubjectPicIDs) === null || _a === void 0 ? void 0 : _a.split(',')) === null || _b === void 0 ? void 0 : _b.slice(0, -1)) === null || _c === void 0 ? void 0 : _c.length) !== null && _d !== void 0 ? _d : 1;
-    const stLength = (_h = (_g = (_f = (_e = d.subjectTakerPicIDs) === null || _e === void 0 ? void 0 : _e.split(',')) === null || _f === void 0 ? void 0 : _f.slice(0, -1)) === null || _g === void 0 ? void 0 : _g.length) !== null && _h !== void 0 ? _h : 1;
+    const tsLength = d.takerSubjectPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
+    const stLength = d.subjectTakerPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
     return tsLength + stLength;
 };
 // The TS graph is the most complicated one, so we define its own processing function
@@ -115,8 +114,8 @@ const processTSData = (takerSubjectData) => new Promise((resolve) => {
             rowIndex += 1;
         });
         const t = networkData.links.map((link) => getCombinedPicNum(link));
-        const mostPicIDs = Math.max(...t);
-        resolve({ networkData, mostPicIDs });
+        const mostPicIds = Math.max(...t);
+        resolve({ networkData, mostPicIds });
     });
 });
 const processData = (clientName, data) => new Promise((resolve) => {
@@ -127,10 +126,11 @@ const processData = (clientName, data) => new Promise((resolve) => {
             name,
         });
     });
-    const mostPicIDs = Math.max(...data.map((pwRow) => {
+    const mostPicIds = Math.max(...data.map((pwRow) => {
         if (pwRow.client === clientName || clientName === 'totalPW') {
             return Math.max(...Object.entries(pwRow).map(([targetName, targetData]) => {
                 if (targetName !== 'client') {
+                    // console.log('Target data length:', targetData.split(',').slice(0, -1).length);
                     return targetData.split(',').slice(0, -1).length;
                 }
                 return 0;
@@ -145,7 +145,7 @@ const processData = (clientName, data) => new Promise((resolve) => {
             });
         }
     });
-    resolve({ networkData, mostPicIDs });
+    resolve({ networkData, mostPicIds });
 });
 const highlightLink = (oldLink, newLink, on, totalGraph, pictureDivName) => {
     const oldSourceName = oldLink.sourceName;
@@ -279,9 +279,8 @@ const displayPWStats = (imgIds) => {
     });
 };
 const displayTSStats = (d) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
-    const sourceOfTargetLength = (_d = (_c = (_b = (_a = d.takerSubjectPicIDs) === null || _a === void 0 ? void 0 : _a.split(',')) === null || _b === void 0 ? void 0 : _b.slice(0, -1)) === null || _c === void 0 ? void 0 : _c.length) !== null && _d !== void 0 ? _d : 1;
-    const targetOfSourceLength = (_h = (_g = (_f = (_e = d.subjectTakerPicIDs) === null || _e === void 0 ? void 0 : _e.split(',')) === null || _f === void 0 ? void 0 : _f.slice(0, -1)) === null || _g === void 0 ? void 0 : _g.length) !== null && _h !== void 0 ? _h : 1;
+    const sourceOfTargetLength = d.takerSubjectPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
+    const targetOfSourceLength = d.subjectTakerPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
     $('.explanation-totalTS').animate({ opacity: 0 }, 200, () => {
         $('.explanation-totalTS').html(`${d.sourceName} has taken ${sourceOfTargetLength} pictures of ${d.targetName}
     <br/> ${d.targetName} has taken ${targetOfSourceLength} pictures of ${d.sourceName}`).animate({ opacity: 1 }, 200);
@@ -307,7 +306,8 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                     : processData(clientName, data);
                 processPromise.then((dataAndMostPicIds) => {
                     const networkData = dataAndMostPicIds.networkData;
-                    const mostPicIDs = dataAndMostPicIds.mostPicIds;
+                    const mostPicIds = dataAndMostPicIds.mostPicIds;
+
                     const maxLinkWidth = 10;
                     // Initialize the links
                     const networkDataLink = svg
@@ -319,16 +319,15 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         .style('stroke', edgeColors[pictureDivName])
                         .style('cursor', 'pointer')
                         .style('stroke-width', (d) => {
-                        var _a, _b, _c, _d;
                         const numPicIDs = clientName === 'totalTS'
                             ? getCombinedPicNum(d)
-                            : (_d = (_c = (_b = (_a = d.picIDs) === null || _a === void 0 ? void 0 : _a.split(',')) === null || _b === void 0 ? void 0 : _b.slice(0, -1)) === null || _c === void 0 ? void 0 : _c.length) !== null && _d !== void 0 ? _d : 1;
-                        const width = Math.ceil((maxLinkWidth * (numPicIDs + 1)) / mostPicIDs);
+                            : d.picIDs?.split(',')?.slice(0, -1)?.length ?? 1;
+                        console.log(numPicIDs);
+                        const width = Math.ceil((maxLinkWidth * (numPicIDs + 1)) / mostPicIds);
                         return width;
                     })
                         .on('click', (d) => {
-                        var _a, _b, _c;
-                        const imgIDs = (_c = (_b = (_a = d.picIDs) === null || _a === void 0 ? void 0 : _a.split(',')) === null || _b === void 0 ? void 0 : _b.slice(0, -1)) !== null && _c !== void 0 ? _c : [];
+                        const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];;
                         if (clientName !== 'totalPW' && clientName !== 'totalTS') {
                             if (d.targetName === DISPLAYED_TARGETS[pictureDivName]) {
                                 IMG_CHANGE_CONTAINER[pictureDivName] = false;
@@ -424,10 +423,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         .style('stroke-width', CIRCLES_STROKE_WIDTH)
                         .style('cursor', 'pointer')
                         .on('click', (d) => {
-                        var _a, _b, _c;
-                        console.log(CLICKED_ELEMENT[pictureDivName]);
-                        console.log(DISPLAYED_TARGETS[pictureDivName]);
-                        const imgIDs = (_c = (_b = (_a = d.picIDs) === null || _a === void 0 ? void 0 : _a.split(',')) === null || _b === void 0 ? void 0 : _b.slice(0, -1)) !== null && _c !== void 0 ? _c : [];
+                        const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];
                         if (clientName !== 'totalPW' && clientName !== 'totalTS') {
                             if (d.name === DISPLAYED_TARGETS[pictureDivName]) {
                                 if (CLICKED_ELEMENT[pictureDivName] === 'link') {
