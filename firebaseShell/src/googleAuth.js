@@ -54,8 +54,8 @@ $( window ).on('load', () => {
 });
 
 $('.fbAuthenticateBtn').on('click', () => {
-    $('.fbAuthenticateBtn').fadeOut("slow", () => {
-        $('.loader').fadeIn("slow");
+    $('.fbAuthenticateBtn').fadeOut("fast", () => {
+        $('.loader').fadeIn("fast");
         signInWithPopup(auth, provider).then(async (result) => {
             CLIENT_NAME = emailToClientName[result.user.email];
             const storage = getStorage(app);
@@ -64,7 +64,7 @@ $('.fbAuthenticateBtn').on('click', () => {
                 $.getJSON(url).done((credentials) => {
                     CREDENTIALS = credentials;
                     gapi.load('client', initializeGapiClient);
-                    $('.loader').fadeOut("slow", () => {
+                    $('.loader').fadeOut(() => {
                         $('.gpAuthenticateBtn').fadeIn();
                         $('.gpAuthenticateBtn').on('click', () => {
                             handleAuthClick();
@@ -88,8 +88,10 @@ const initializeGapiClient = async () => {
 };
 
 const handleAuthClick = () => {
-    $('.gpAuthenticateBtn').fadeOut();
-    $('.loader').fadeIn();
+    $('.gpAuthenticateBtn').fadeOut("fast", () => {
+        $('.loader').fadeIn("fast");
+    });
+    
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) {
             throw (resp);
@@ -108,7 +110,6 @@ const handleAuthClick = () => {
 };
 
 const loadGraphs = () => {
-    console.log('GAPI client loaded for API');
     return gapi.client.photoslibrary.albums.list({}).then((albumsResponse) => {
         const { albums } = albumsResponse.result;
         albums.forEach((album) => {
@@ -133,12 +134,21 @@ const loadGraphs = () => {
                     drawTop3Stats(CLIENT_NAME, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage);
                     drawTop3Stats(CLIENT_NAME, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage);
                     drawBarGraph(CLIENT_NAME, 'photoTaker', storage);
+                    
+                    $('#monthGraphPhotoTakerButton').on('click', () => {
+                        drawBarGraph(CLIENT_NAME,'photoTaker', storage);
+                    });
+                    
+                    $('#monthGraphPhotoSubjectButton').on('click', () => {
+                        drawBarGraph(CLIENT_NAME, 'subject', storage);
+                    });
+
                     drawTreeMap(CLIENT_NAME, storage);
                     drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage);
                     drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage);
                     drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage);
                     drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage);
-                    $('.loader').fadeOut();
+                    
                     $('.authenticateSection').fadeOut('fast', () => {
                         $('.scroller').fadeIn("slow");
                     });

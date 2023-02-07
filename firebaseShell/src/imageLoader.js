@@ -45,7 +45,11 @@ const loadImage = (photoDivName, imgID) => new Promise((resolve, reject) => {
                 resolve(null);
             });
         });
-    }, (err) => reject(err));
+    }, (err) => {
+        console.log(imgID);
+        reject(err);
+        resolve(null);
+    });
 });
 const removeImage = (pictureToRemoveID, timeToDisappear) => new Promise((resolve) => {
     LOCKED = true;

@@ -5,24 +5,37 @@ import { IMG_CHANGE_CONTAINER } from "./imageLoader.js";
 import { DISPLAYED_TARGETS } from "./imageLoader.js";
 import { PROMISES } from "./imageLoader.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+import { Rainbow } from "./gradienter.js";
 
 const MONTHS = [
-    { name: 'August', color: '#ff8600' },
-    { name: 'September', color: '#ff9200' },
-    { name: 'October', color: '#ff9f00' },
-    { name: 'November', color: '#ffab00' },
-    { name: 'December', color: '#ffb700' },
-    { name: 'January', color: '#ffc300' },
-    { name: 'February', color: '#ffcf00' },
-    { name: 'March', color: '#ffdb0b' },
-    { name: 'April', color: '#ffe61c' },
-    { name: 'May', color: '#fff22a' },
-    { name: 'June', color: '#fffe37' },
-    { name: 'July', color: '#fffe37' },
-    { name: 'August', color: '#fffe37' },
-    { name: 'September', color: '#fffe37' },
+    { name: '2021_August', color: '' },
+    { name: '2021_September', color: '' },
+    { name: '2021_October', color: '' },
+    { name: '2021_November', color: '' },
+    { name: '2021_December', color: '' },
+    { name: '2022_January', color: '' },
+    { name: '2022_February', color: '' },
+    { name: '2022_March', color: '' },
+    { name: '2022_April', color: '' },
+    { name: '2022_May', color: '' },
+    { name: '2022_June', color: '' },
+    { name: '2022_July', color: '' },
+    { name: '2022_August', color: '' },
+    { name: '2022_September', color: '' },
+    { name: '2022_October', color: ''},
+    { name: '2022_November', color: '' }
 ];
-const shortenedMonths = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+
+var rainbow = new Rainbow();
+rainbow.setNumberRange(0, MONTHS.length);
+rainbow.setSpectrum('#ff8600', '#fffe37');
+
+for (let monthI = 0; monthI < MONTHS.length; monthI++) {
+    MONTHS[monthI].color += rainbow.colourAt(monthI);
+}
+
+
+const shortenedMonths = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
 let CURRENT_SUBJECT_OR_TAKER = 'photoTaker';
 $('.slide-in-out-photoTaker').toggleClass('slide');
 // var monthGraphMargin = {top: 30, right: 30, bottom: 70, left: 60},
@@ -33,18 +46,6 @@ const monthGraphHeight = 380;
 const monthGraphMargin = {
     top: 10, right: 10, bottom: 40, left: 40,
 };
-
-
-const handleTakerSubjectClick = (clientName) => {
-    $('#monthGraphPhotoTakerButton').on('click', () => {
-        drawBarGraph(clientName,'photoTaker');
-    });
-    
-    $('#monthGraphPhotoSubjectButton').on('click', () => {
-        drawBarGraph(clientName, 'subject');
-    });
-}
-
 
 
 // append the svg object to the body of the page
@@ -65,8 +66,9 @@ const monthGraphY = d3.scaleLinear()
     .range([monthGraphHeight, 0]);
 const monthGraphYAxis = monthGraphSVG.append('g')
     .attr('class', 'monthGraphYAxis');
+
+
 export const drawBarGraph = (clientName, subjectOrTaker, storage) => {
-    handleTakerSubjectClick(clientName);
     if (subjectOrTaker !== CURRENT_SUBJECT_OR_TAKER) {
         $('.slide-in-out-photoTaker').toggleClass('slide');
         $('.slide-in-out-subject').toggleClass('slide');
@@ -75,7 +77,9 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage) => {
     const asPTReference = storageRef(storage, 'data/pictureBySubjectByMonth.csv');
     getDownloadURL(asPTReference)
         .then((ptUrl) => {
+            
             d3.csv(ptUrl, (phototakerErr, asPhotoTakerData) => {
+                
                 if (phototakerErr) {
                     console.error(phototakerErr);
                     return;
@@ -98,21 +102,24 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage) => {
                                             for (let monthI = 0; monthI < MONTHS.length; monthI += 1) {
                                                 clientData.push({
                                                     month: shortenedMonths[monthI],
-                                                    photoTaker: ptD[MONTHS[monthI].name],
-                                                    subject: sD[MONTHS[monthI].name],
-                                                    color: MONTHS[monthI].color,
+                                                    photoTaker: ptD[MONTHS[monthI].name] ?? '',
+                                                    subject: sD[MONTHS[monthI].name] ?? '',
+                                                    color: '#'+MONTHS[monthI].color,
                                                 });
                                             }
                                         }
                                     }
                                 }
                             }
+                           
                             // X axis
                             monthGraphX.domain(clientData.map((d) => d.month));
                             monthGraphXAxis.transition().duration(1000).call(d3.axisBottom(monthGraphX))
                                 
                             // Add Y axis
-                            monthGraphY.domain([0, d3.max(clientData, (d) => +(d[subjectOrTaker].split(',').length - 1))]);
+                            monthGraphY.domain([0, d3.max(clientData, (d) => {
+                                return +(d[subjectOrTaker].split(',').length - 1);
+                            })]);
                             monthGraphYAxis.transition().duration(1000).call(d3.axisLeft(monthGraphY));
                             // variable u: map data to existing bars
                             const u = monthGraphSVG.selectAll('rect')

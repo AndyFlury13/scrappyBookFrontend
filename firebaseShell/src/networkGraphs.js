@@ -286,12 +286,24 @@ const displayTSStats = (d) => {
     <br/> ${d.targetName} has taken ${targetOfSourceLength} pictures of ${d.sourceName}`).animate({ opacity: 1 }, 200);
     });
 };
+
 const clearNetworkStats = (clientName) => {
+
+    const edgeDescription = clientName == 'totalPW' ? 'pictures they are in together' : 'pictures they\'ve taken of each other';
+    $(`.explanation-${clientName}`).animate({ opacity: 0 }, 200, () => {
+        $(`.explanation-${clientName}`).html('<p>Click on the graph edges to load stats'
+            + '<br/>' + `An edge between two people represents <i>${edgeDescription}</i>.<br/>`
+            + '(Clicking the nodes doesn\'t do anything but I think it looks pretty)</p>').animate({ opacity: 1 }, 200);
+    });
+};
+
+const clearTSStats = (clientName) => {
     $(`.explanation-${clientName}`).animate({ opacity: 0 }, 200, () => {
         $(`.explanation-${clientName}`).html('Click on the graph edges to load stats'
             + '<br/> (Clicking the nodes doesn\'t do anything but I think it looks pretty)').animate({ opacity: 1 }, 200);
     });
 };
+
 export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, storage) => {
     const reference = storageRef(storage, `data/${dataFileName}.csv`);
     getDownloadURL(reference)
@@ -321,9 +333,8 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         .style('stroke-width', (d) => {
                         const numPicIDs = clientName === 'totalTS'
                             ? getCombinedPicNum(d)
-                            : d.picIDs?.split(',')?.slice(0, -1)?.length ?? 1;
-                        console.log(numPicIDs);
-                        const width = Math.ceil((maxLinkWidth * (numPicIDs + 1)) / mostPicIds);
+                            : d.picIDs?.split(',')?.slice(0, -1)?.length ?? 0;
+                        const width = Math.ceil((maxLinkWidth * (numPicIDs)) / mostPicIds);
                         return width;
                     })
                         .on('click', (d) => {
