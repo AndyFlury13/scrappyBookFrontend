@@ -80,44 +80,54 @@ const processTarget = (targetName, targetData, clientName, networkData) => {
         networkData.nodes[getIDFromName(targetName, networkData.nodes)].picIDs = targetData;
     }
 };
+
 const getCombinedPicNum = (d) => {
-    const tsLength = d.takerSubjectPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
-    const stLength = d.subjectTakerPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
+    const tsLength = d.takerSubjectPicIDs?.split(',')?.slice(0, -1)?.length ?? 0;
+    const stLength = d.subjectTakerPicIDs?.split(',')?.slice(0, -1)?.length ?? 0;
     return tsLength + stLength;
 };
+
 // The TS graph is the most complicated one, so we define its own processing function
-const processTSData = (takerSubjectData) => new Promise((resolve) => {
-    d3.csv('/data/subjectTaker.csv', (subjectTakerData) => {
-        const networkData = { nodes: [], links: [] };
-        NAMES.forEach((name, nameI) => {
-            networkData.nodes.push({
-                id: nameI,
-                name,
-            });
-        });
-        let rowIndex = 0;
-        takerSubjectData.forEach((tsRow) => {
-            const clientName = tsRow.client;
-            Object.entries(tsRow).forEach(([targetName, targetData]) => {
-                if (targetName !== 'client' && targetName !== clientName) {
-                    networkData.links.push({
-                        source: getIDFromName(clientName, networkData.nodes),
-                        sourceName: clientName,
-                        target: getIDFromName(targetName, networkData.nodes),
-                        targetName,
-                        takerSubjectPicIDs: targetData,
-                        subjectTakerPicIDs: subjectTakerData[rowIndex][targetName],
-                        // pics target has taken of source
-                    });
+const processTSData = (takerSubjectData, storage) => new Promise((resolve) => {
+    const reference = storageRef(storage, 'data/subjectTaker.csv');
+    getDownloadURL(reference)
+        .then((url) => {
+            d3.csv(url, (err, subjectTakerData) => {
+                if (err) {
+                    console.error(err);
+                    return;
                 }
+                const networkData = { nodes: [], links: [] };
+                NAMES.forEach((name, nameI) => {
+                    networkData.nodes.push({
+                        id: nameI,
+                        name,
+                    });
+                });
+                let rowIndex = 0;
+                takerSubjectData.forEach((tsRow) => {
+                    const clientName = tsRow.client;
+                    Object.entries(tsRow).forEach(([targetName, targetData]) => {
+                        if (targetName !== 'client' && targetName !== clientName) {
+                            networkData.links.push({
+                                source: getIDFromName(clientName, networkData.nodes),
+                                sourceName: clientName,
+                                target: getIDFromName(targetName, networkData.nodes),
+                                targetName,
+                                takerSubjectPicIDs: targetData, // pics source has taken of source
+                                subjectTakerPicIDs: subjectTakerData[rowIndex][targetName]   // pics target has taken of source
+                            });
+                        }
+                    });
+                    rowIndex += 1;
+                });
+                const t = networkData.links.map((link) => getCombinedPicNum(link));
+                const mostPicIds = Math.max(...t);
+                resolve({ networkData, mostPicIds });
             });
-            rowIndex += 1;
         });
-        const t = networkData.links.map((link) => getCombinedPicNum(link));
-        const mostPicIds = Math.max(...t);
-        resolve({ networkData, mostPicIds });
-    });
 });
+
 const processData = (clientName, data) => new Promise((resolve) => {
     const networkData = { nodes: [], links: [] };
     NAMES.forEach((name, nameI) => {
@@ -130,7 +140,6 @@ const processData = (clientName, data) => new Promise((resolve) => {
         if (pwRow.client === clientName || clientName === 'totalPW') {
             return Math.max(...Object.entries(pwRow).map(([targetName, targetData]) => {
                 if (targetName !== 'client') {
-                    // console.log('Target data length:', targetData.split(',').slice(0, -1).length);
                     return targetData.split(',').slice(0, -1).length;
                 }
                 return 0;
@@ -225,8 +234,7 @@ const highlightNode = (oldNodeName, newNodeName, clientName, on, totalGraph, pic
                 .transition()
                 .duration(400)
                 .style('opacity', 1);
-        }
-        else {
+        } else {
             d3.selectAll(`.link-${pictureDivName}`)
                 .filter((d) => (oldNodeName === ''
                 ? true
@@ -253,8 +261,7 @@ const highlightNode = (oldNodeName, newNodeName, clientName, on, totalGraph, pic
                 .duration(400)
                 .style('filter', 'brightness(100%)');
         }
-    }
-    else {
+    } else {
         if (totalGraph) {
             d3.selectAll(`.link-${pictureDivName}`)
                 .transition()
@@ -273,6 +280,7 @@ const highlightNode = (oldNodeName, newNodeName, clientName, on, totalGraph, pic
             .style('filter', 'brightness(100%)');
     }
 };
+
 const displayPWStats = (imgIds) => {
     $('.explanation-totalPW').animate({ opacity: 0 }, 200, () => {
         $('.explanation-totalPW').html(`Pictured together ${imgIds.length} times`).animate({ opacity: 1 }, 200);
@@ -288,19 +296,11 @@ const displayTSStats = (d) => {
 };
 
 const clearNetworkStats = (clientName) => {
-
     const edgeDescription = clientName == 'totalPW' ? 'pictures they are in together' : 'pictures they\'ve taken of each other';
     $(`.explanation-${clientName}`).animate({ opacity: 0 }, 200, () => {
         $(`.explanation-${clientName}`).html('<p>Click on the graph edges to load stats'
             + '<br/>' + `An edge between two people represents <i>${edgeDescription}</i>.<br/>`
             + '(Clicking the nodes doesn\'t do anything but I think it looks pretty)</p>').animate({ opacity: 1 }, 200);
-    });
-};
-
-const clearTSStats = (clientName) => {
-    $(`.explanation-${clientName}`).animate({ opacity: 0 }, 200, () => {
-        $(`.explanation-${clientName}`).html('Click on the graph edges to load stats'
-            + '<br/> (Clicking the nodes doesn\'t do anything but I think it looks pretty)').animate({ opacity: 1 }, 200);
     });
 };
 
@@ -314,7 +314,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                     return;
                 }
                 const processPromise = clientName === 'totalTS'
-                    ? processTSData(data)
+                    ? processTSData(data, storage)
                     : processData(clientName, data);
                 processPromise.then((dataAndMostPicIds) => {
                     const networkData = dataAndMostPicIds.networkData;
@@ -369,7 +369,6 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         else if (d.targetName === DISPLAYED_TARGETS[pictureDivName]
                             || d.sourceName === DISPLAYED_TARGETS[pictureDivName]) {
                             highlightLink({ sourceName: clientName, targetName: DISPLAYED_TARGETS[pictureDivName] }, { sourceName: clientName, targetName: d.targetName }, false, true, pictureDivName);
-                            console.log(CLICKED_ELEMENT[pictureDivName]);
                             if (CLICKED_ELEMENT[pictureDivName] === 'node') {
                                 highlightLink({ sourceName: '', targetName: '' }, { sourceName: d.sourceName, targetName: d.targetName }, true, true, pictureDivName);
                                 if (clientName === 'totalTS') {
@@ -432,56 +431,83 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         .style('fill', (d) => `url(#${d.name}_icon)`)
                         .style('stroke', edgeColors[pictureDivName])
                         .style('stroke-width', CIRCLES_STROKE_WIDTH)
-                        .style('cursor', 'pointer')
+                        .style('cursor', (d) => d.name === clientName ? 'default' : 'pointer')
                         .on('click', (d) => {
-                        const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];
-                        if (clientName !== 'totalPW' && clientName !== 'totalTS') {
-                            if (d.name === DISPLAYED_TARGETS[pictureDivName]) {
-                                if (CLICKED_ELEMENT[pictureDivName] === 'link') {
-                                    DISPLAYED_TARGETS[pictureDivName] = '';
-                                    highlightLink({ sourceName: '', targetName: '' }, { sourceName: '', targetName: '' }, false, false, pictureDivName);
-                                }
-                                IMG_CHANGE_CONTAINER[pictureDivName] = false;
-                                ON_CONTAINER[pictureDivName] = false;
-                                DISPLAYED_TARGETS[pictureDivName] = '';
-                                CLICKED_ELEMENT[pictureDivName] = '';
-                                highlightNode('', d.name, clientName, false, false, pictureDivName);
-                            }
-                            else {
-                                highlightNode(DISPLAYED_TARGETS[pictureDivName], d.name, clientName, true, false, pictureDivName);
-                                $(`.explanation-${pictureDivName}`).fadeOut('fast');
-                                IMG_CHANGE_CONTAINER[pictureDivName] = true;
-                                CLICKED_ELEMENT[pictureDivName] = 'node';
-                                ON_CONTAINER[pictureDivName] = false;
-                                DISPLAYED_TARGETS[pictureDivName] = d.name;
-                                PROMISES[pictureDivName].then(() => {
-                                    ON_CONTAINER[pictureDivName] = true;
-                                    if (IMG_CHANGE_CONTAINER[pictureDivName]) {
-                                        PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER);
+                            if (d.name !== clientName) {
+                                const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];
+                                if (imgIDs.length === 0) {
+                                    if (d.name === DISPLAYED_TARGETS[pictureDivName]) { // clearing the display
+                                        highlightNode('', d.name, clientName, false, false, pictureDivName);
+                                        DISPLAYED_TARGETS[pictureDivName] = '';
+                                        CLICKED_ELEMENT[pictureDivName] = '';
+                                        $(`.explanation-${pictureDivName}`).fadeOut(() => {
+                                            const explanationText = 'Click the graph elements to load images.<br/>Every edge from you to someone else represents pictures you' +
+                                            `${pictureDivName === 'clientTakerSubject' 
+                                                ? '\'ve taken of'
+                                                : ' appear in with'
+                                            }` +
+                                            ' them';
+                                            console.log(explanationText);
+                                            $(`.explanation-${pictureDivName}`).html(explanationText);
+                                        }).fadeIn();
+                                    } else {
+                                        highlightNode(DISPLAYED_TARGETS[pictureDivName], d.name, clientName, true, false, pictureDivName);
+                                        DISPLAYED_TARGETS[pictureDivName] = d.name;
+                                        CLICKED_ELEMENT[pictureDivName] = 'node';
+                                        console.log('FUCK');
+                                        $(`.explanation-${pictureDivName}`).fadeOut(() => {
+                                            console.log('test');
+                                            $(`.explanation-${pictureDivName}`).html("OwO<br/>Looks like you don't have any pictures with this person!");
+                                        }).fadeIn();
                                     }
-                                });
+                                    IMG_CHANGE_CONTAINER[pictureDivName] = false;
+                                    ON_CONTAINER[pictureDivName] = false;
+                                    
+                                } else if (clientName !== 'totalPW' && clientName !== 'totalTS') {
+                                    if (d.name === DISPLAYED_TARGETS[pictureDivName]) { // clearing the displayed pictures
+                                        if (CLICKED_ELEMENT[pictureDivName] === 'link') {
+                                            DISPLAYED_TARGETS[pictureDivName] = '';
+                                            highlightLink({ sourceName: '', targetName: '' }, { sourceName: '', targetName: '' }, false, false, pictureDivName);
+                                        }
+                                        IMG_CHANGE_CONTAINER[pictureDivName] = false;
+                                        ON_CONTAINER[pictureDivName] = false;
+                                        DISPLAYED_TARGETS[pictureDivName] = '';
+                                        CLICKED_ELEMENT[pictureDivName] = '';
+                                        highlightNode('', d.name, clientName, false, false, pictureDivName);
+                                    } else {
+                                        highlightNode(DISPLAYED_TARGETS[pictureDivName], d.name, clientName, true, false, pictureDivName);
+                                        $(`.explanation-${pictureDivName}`).fadeOut('fast');
+                                        IMG_CHANGE_CONTAINER[pictureDivName] = true;
+                                        CLICKED_ELEMENT[pictureDivName] = 'node';
+                                        ON_CONTAINER[pictureDivName] = false;
+                                        DISPLAYED_TARGETS[pictureDivName] = d.name;
+                                        PROMISES[pictureDivName].then(() => {
+                                            ON_CONTAINER[pictureDivName] = true;
+                                            if (IMG_CHANGE_CONTAINER[pictureDivName]) {
+                                                PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER);
+                                            }
+                                        });
+                                    }
+                                } else if (d.name === DISPLAYED_TARGETS[pictureDivName]) {
+                                    highlightNode('', '', clientName, false, true, pictureDivName);
+                                    if (CLICKED_ELEMENT[pictureDivName] === 'link') {
+                                        highlightNode('', d.name, clientName, true, true, pictureDivName);
+                                        CLICKED_ELEMENT[pictureDivName] = 'node';
+                                        DISPLAYED_TARGETS[pictureDivName] = d.name;
+                                    } else {
+                                        DISPLAYED_TARGETS[pictureDivName] = '';
+                                        clearNetworkStats(clientName);
+                                        CLICKED_ELEMENT[pictureDivName] = '';
+                                    }
+                                } else {
+                                    highlightNode(DISPLAYED_TARGETS[pictureDivName], d.name, clientName, true, true, clientName);
+                                    DISPLAYED_TARGETS[pictureDivName] = d.name;
+                                    clearNetworkStats(clientName);
+                                    CLICKED_ELEMENT[pictureDivName] = 'node';
+                                }
                             }
                         }
-                        else if (d.name === DISPLAYED_TARGETS[pictureDivName]) {
-                            highlightNode('', '', clientName, false, true, pictureDivName);
-                            if (CLICKED_ELEMENT[pictureDivName] === 'link') {
-                                highlightNode('', d.name, clientName, true, true, pictureDivName);
-                                CLICKED_ELEMENT[pictureDivName] = 'node';
-                                DISPLAYED_TARGETS[pictureDivName] = d.name;
-                            }
-                            else {
-                                DISPLAYED_TARGETS[pictureDivName] = '';
-                                clearNetworkStats(clientName);
-                                CLICKED_ELEMENT[pictureDivName] = '';
-                            }
-                        }
-                        else {
-                            highlightNode(DISPLAYED_TARGETS[pictureDivName], d.name, clientName, true, true, clientName);
-                            DISPLAYED_TARGETS[pictureDivName] = d.name;
-                            clearNetworkStats(clientName);
-                            CLICKED_ELEMENT[pictureDivName] = 'node';
-                        }
-                    });
+                    );
                     // This function is run at each iteration of the force algorithm, updating the nodes position.
                     const networkTicked = () => {
                         networkDataLink
