@@ -1,4 +1,4 @@
-import { drawTreeMap } from "./treeMap.js";
+import { drawDonut } from "./donut.js";
 import { 
     clientPicturedWithSVG, 
     clientTakerSubjectSVG, 
@@ -143,7 +143,7 @@ const loadGraphs = () => {
                         drawBarGraph(CLIENT_NAME, 'subject', storage);
                     });
 
-                    drawTreeMap(CLIENT_NAME, storage);
+                    drawDonut(CLIENT_NAME, storage);
                     drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage);
                     drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage);
                     drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage);

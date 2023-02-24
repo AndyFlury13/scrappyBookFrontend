@@ -1,5 +1,4 @@
 import { slideshow } from "./imageLoader.js";
-import { highlightRectangles } from "./treeMap.js";
 import { ON_CONTAINER } from "./imageLoader.js";
 import { IMG_CHANGE_CONTAINER } from "./imageLoader.js";
 import { DISPLAYED_TARGETS } from "./imageLoader.js";
@@ -66,7 +65,48 @@ const monthGraphY = d3.scaleLinear()
     .range([monthGraphHeight, 0]);
 const monthGraphYAxis = monthGraphSVG.append('g')
     .attr('class', 'monthGraphYAxis');
-
+const highlightRectangles = (className, oldCategory, newCategory) => {
+    if (oldCategory === 'none') {
+        d3.selectAll(`.${className}`)
+            .filter((d) => {
+            if (className === 'treeMapRect') {
+                return newCategory !== d.data.name;
+            }
+            return newCategory !== d.month;
+        })
+            .transition()
+            .duration(1000)
+            .style('filter', 'grayscale(100%)');
+    }
+    else if (oldCategory === newCategory) {
+        d3.selectAll(`.${className}`)
+            .transition()
+            .duration(1000)
+            .style('filter', 'grayscale(0%)');
+    }
+    else {
+        d3.selectAll(`.${className}`)
+            .filter((d) => {
+            if (className === 'treeMapRect') {
+                return newCategory === d.data.name;
+            }
+            return newCategory === d.month;
+        })
+            .transition()
+            .duration(1000)
+            .style('filter', 'grayscale(0%)');
+        d3.selectAll(`.${className}`)
+            .filter((d) => {
+            if (className === 'treeMapRect') {
+                return newCategory !== d.data.name;
+            }
+            return newCategory !== d.month;
+        })
+            .transition()
+            .duration(1000)
+            .style('filter', 'grayscale(100%)');
+    }
+};
 
 export const drawBarGraph = (clientName, subjectOrTaker, storage) => {
     if (subjectOrTaker !== CURRENT_SUBJECT_OR_TAKER) {

@@ -3,19 +3,19 @@ export const ON_CONTAINER = {
     clientPicturedWith: false,
     clientTakerSubject: false,
     month: false,
-    treeMap: false,
+    donut: false,
 };
 export const IMG_CHANGE_CONTAINER = {
     clientPicturedWith: true,
     clientTakerSubject: true,
     month: true,
-    treeMap: true,
+    donut: true,
 };
 export const DISPLAYED_TARGETS = {
     clientPicturedWith: '',
     clientTakerSubject: '',
     month: '',
-    treeMap: '',
+    donut: '',
     totalPW: '',
     totalTS: '',
 };
@@ -29,8 +29,8 @@ export const PROMISES = {
     month: new Promise((resolve) => {
         resolve(IMG_CHANGE_CONTAINER.month);
     }),
-    treeMap: new Promise((resolve) => {
-        resolve(IMG_CHANGE_CONTAINER.treeMap);
+    donut: new Promise((resolve) => {
+        resolve(IMG_CHANGE_CONTAINER.donut);
     }),
 };
 const loadImage = (photoDivName, imgID) => new Promise((resolve, reject) => {
