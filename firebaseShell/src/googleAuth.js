@@ -96,6 +96,7 @@ const handleAuthClick = () => {
         if (resp.error !== undefined) {
             throw (resp);
         }
+        console.log(resp);
         await loadGraphs();
     };
 
@@ -128,30 +129,39 @@ const loadGraphs = () => {
                     });
 
                     const storage = getStorage(app);
-                    displayStats(CLIENT_NAME, storage);
-
-                    drawTop3Stats(CLIENT_NAME, 'picturedWith', 'picturedWithTop3', columnOneColors, storage);
-                    drawTop3Stats(CLIENT_NAME, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage);
-                    drawTop3Stats(CLIENT_NAME, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage);
-                    drawBarGraph(CLIENT_NAME, 'photoTaker', storage);
-                    
-                    $('#monthGraphPhotoTakerButton').on('click', () => {
-                        drawBarGraph(CLIENT_NAME,'photoTaker', storage);
+                    const projectMapReference = ref(storage, `data/projectMap.json`);
+                    getDownloadURL(projectMapReference)
+                    .then((url) => {
+                        $.getJSON(url, (projectMap) => {
+                            console.log(projectMap);
+                            const projectPath=projectMap[];
+                            displayStats(CLIENT_NAME, storage);
+        
+                            drawTop3Stats(CLIENT_NAME, 'picturedWith', 'picturedWithTop3', columnOneColors, storage, projectPath);
+                            drawTop3Stats(CLIENT_NAME, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage, projectPath);
+                            drawTop3Stats(CLIENT_NAME, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage, projectPath);
+                            drawBarGraph(CLIENT_NAME, 'photoTaker', storage, projectPath);
+                            
+                            $('#monthGraphPhotoTakerButton').on('click', () => {
+                                drawBarGraph(CLIENT_NAME,'photoTaker', storage, projectPath);
+                            });
+                            
+                            $('#monthGraphPhotoSubjectButton').on('click', () => {
+                                drawBarGraph(CLIENT_NAME, 'subject', storage, projectPath);
+                            });
+        
+                            drawDonut(CLIENT_NAME, storage, projectPath);
+                            drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage, projectPath);
+                            drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage, projectPath);
+                            drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage, projectPath);
+                            drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage, projectPath);
+                            
+                            $('.authenticateSection').fadeOut('fast', () => {
+                                $('.scroller').fadeIn("slow");
+                            });
+                        });
                     });
                     
-                    $('#monthGraphPhotoSubjectButton').on('click', () => {
-                        drawBarGraph(CLIENT_NAME, 'subject', storage);
-                    });
-
-                    drawDonut(CLIENT_NAME, storage);
-                    drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage);
-                    drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage);
-                    drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage);
-                    drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage);
-                    
-                    $('.authenticateSection').fadeOut('fast', () => {
-                        $('.scroller').fadeIn("slow");
-                    });
                     // TODO
                     while ('nextPageToken' in mediaResponse) {
                         alert('todo');

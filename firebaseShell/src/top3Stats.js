@@ -30,8 +30,8 @@ export const columnThreeColors = [
     '#fd7b00',
     '#ff8600',
 ];
-export const drawTop3Stats = (clientName, dataFileName, rankingName, colors, storage) => {
-    const reference = storageRef(storage, `data/${dataFileName}.csv`);
+export const drawTop3Stats = (clientName, dataFileName, rankingName, colors, storage, project) => {
+    const reference = storageRef(storage, `data/${project}/${dataFileName}.csv`);
     getDownloadURL(reference)
         .then((url) => {
             d3.csv(url, (err, data) => {

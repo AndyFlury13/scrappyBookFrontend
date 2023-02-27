@@ -30,8 +30,8 @@ function counterControl(target, number) {
         target.find(`.digit${i}`).delay(i * 300).animate({ top: -((increment * num) + (increment * 10)) }, defaults.speed, 'linear');
     });
 }
-export const displayStats = (clientName, storage) => {
-    const reference = storageRef(storage, 'data/overallStats.json');
+export const displayStats = (clientName, storage, storagePath) => {
+    const reference = storageRef(storage, `data/${storagePath}/overallStats.json`);
     getDownloadURL(reference)
         .then((url) => {
             $.getJSON(url, (data) => {

@@ -119,8 +119,8 @@ var radius = Math.min(width, height) / 2 - margin
 
 
 // read json data
-export const drawDonut = (clientName, storage) => {
-    const reference = storageRef(storage, 'data/subjectCategory.csv');
+export const drawDonut = (clientName, storage, projectPath) => {
+    const reference = storageRef(storage, `data/${projectPath}/subjectCategory.csv`);
     getDownloadURL(reference)
         .then((url) => {
             d3.csv(url, (err, data) => {

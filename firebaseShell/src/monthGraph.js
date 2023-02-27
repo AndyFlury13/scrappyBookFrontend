@@ -108,13 +108,13 @@ const highlightRectangles = (className, oldCategory, newCategory) => {
     }
 };
 
-export const drawBarGraph = (clientName, subjectOrTaker, storage) => {
+export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) => {
     if (subjectOrTaker !== CURRENT_SUBJECT_OR_TAKER) {
         $('.slide-in-out-photoTaker').toggleClass('slide');
         $('.slide-in-out-subject').toggleClass('slide');
         CURRENT_SUBJECT_OR_TAKER = subjectOrTaker;
     }
-    const asPTReference = storageRef(storage, 'data/pictureBySubjectByMonth.csv');
+    const asPTReference = storageRef(storage, `data/${projectPath}/pictureBySubjectByMonth.csv`);
     getDownloadURL(asPTReference)
         .then((ptUrl) => {
             
