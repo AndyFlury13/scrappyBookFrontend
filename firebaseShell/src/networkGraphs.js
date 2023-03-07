@@ -25,8 +25,10 @@ const CLICKED_ELEMENT = {
     totalTS: '',
     totalPW: '',
 };
+var defsLoaded = false;
 export const CIRCLES_STROKE_WIDTH = 2;
-const NAMES = ['me', 'girlBoss', 'shirleyWhirley', 'dumbestKid', 'yuppie', 'bugBoy', 'emily', 'other', 'jiusus', 'chimu'];
+export const NAMES = ['me', 'girlBoss', 'shirleyWhirley', 'dumbestKid', 'yuppie', 'bugBoy', 'emily', 'other', 'jiusus', 'chimu'];
+export const MAUI_NAMES = ['Andrew', 'Dalton', 'Sean', 'Cynthia', 'Haider', 'Ishan', 'Nicco', 'Megan'];
 // append the svg object to the body of the page
 export const clientPicturedWithSVG = d3.select('#clientPicturedWithGraph')
     .append('svg')
@@ -56,8 +58,6 @@ export const totalTSSVG = d3.select('#totalTSGraph')
     .attr('width', totalNetworkHeight)
     .append('g')
     .attr('transform', `translate(${totalNetworkHeight / 2},${totalNetworkHeight / 2})`);
-export const ICON_DATA = [];
-let defsLoaded = false;
 const getIDFromName = (name, nodeList) => {
     let id = 'error';
     nodeList.forEach((node) => {
@@ -304,7 +304,7 @@ const clearNetworkStats = (clientName) => {
     });
 };
 
-export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, storage, projectPath) => {
+export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, storage, projectPath, iconData) => {
     const reference = storageRef(storage, `data/${projectPath}/${dataFileName}.csv`);
     getDownloadURL(reference)
         .then((url) => {
@@ -405,7 +405,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         const body = d3.select('body');
                         const definitionSVG = body.append('svg');
                         const defs = definitionSVG.append('svg:defs');
-                        ICON_DATA.forEach((d) => {
+                        iconData.forEach((d) => {
                             defs.append('svg:pattern')
                                 .attr('id', `${d.name}_icon`)
                                 .attr('patternContentUnits', 'objectBoundingBox')

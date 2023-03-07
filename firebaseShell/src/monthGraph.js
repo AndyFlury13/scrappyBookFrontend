@@ -124,7 +124,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                     console.error(phototakerErr);
                     return;
                 }
-                const asSubjectReference = storageRef(storage, 'data/pictureOfSubjectByMonth.csv');
+                const asSubjectReference = storageRef(storage, `data/${projectPath}/pictureOfSubjectByMonth.csv`);
                 getDownloadURL(asSubjectReference)
                     .then((subjectUrl) => {
                         d3.csv(subjectUrl, (asSubjectErr, asSubjectData) => {

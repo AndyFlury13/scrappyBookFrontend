@@ -2,8 +2,9 @@ import { drawDonut } from "./donut.js";
 import { 
     clientPicturedWithSVG, 
     clientTakerSubjectSVG, 
-    drawNetwork, 
-    ICON_DATA,
+    drawNetwork,
+    MAUI_NAMES,
+    NAMES,
     totalPWSVG,
     totalTSSVG
 } from "./networkGraphs.js";
@@ -67,7 +68,7 @@ $('.fbAuthenticateBtn').on('click', () => {
                     $('.loader').fadeOut(() => {
                         $('.gpAuthenticateBtn').fadeIn();
                         $('.gpAuthenticateBtn').on('click', () => {
-                            handleAuthClick();
+                            handleAuthClick(result.user.email);
                         });
                     });
                 });
@@ -87,7 +88,7 @@ const initializeGapiClient = async () => {
     });
 };
 
-const handleAuthClick = () => {
+const handleAuthClick = (email) => {
     $('.gpAuthenticateBtn').fadeOut("fast", () => {
         $('.loader').fadeIn("fast");
     });
@@ -97,7 +98,7 @@ const handleAuthClick = () => {
             throw (resp);
         }
         console.log(resp);
-        await loadGraphs();
+        await loadGraphs(email);
     };
 
     if (gapi.client.getToken() === null) {
@@ -110,69 +111,53 @@ const handleAuthClick = () => {
     }
 };
 
-const loadGraphs = () => {
-    return gapi.client.photoslibrary.albums.list({}).then((albumsResponse) => {
-        const { albums } = albumsResponse.result;
-        albums.forEach((album) => {
-            if (album.title === 'iconPhotos') { // load icon album
-                return gapi.client.photoslibrary.mediaItems.search({
-                    albumId: album.id,
-                    pageSize: 13,
-                }).then((mediaResponse) => {
-                    // do stuff here
-                    const { mediaItems } = mediaResponse.result;
-                    mediaItems.forEach((mediaItem) => {
-                        ICON_DATA.push({
-                            name: mediaItem.description,
-                            url: mediaItem.baseUrl,
-                        });
+const loadGraphs = (email) => {
+    const storage = getStorage(app);
+    const projectMapReference = ref(storage, `data/projectMap.json`);
+    getDownloadURL(projectMapReference).then((url) => {
+        $.getJSON(url, (projectMap) => {
+            const projectPath=projectMap[email];
+            const names = projectPath === 'maui' ? MAUI_NAMES : NAMES;
+            const iconPromises = names.map((iconSubject) => new Promise((resolve, reject) => {
+                const iconPhotoReference = ref(storage, `data/${projectPath}/iconPhotos/${iconSubject}.png`);
+                getDownloadURL(iconPhotoReference).then((fbUrl) => {
+                    resolve({
+                        name: iconSubject,
+                        url: fbUrl
                     });
-
-                    const storage = getStorage(app);
-                    const projectMapReference = ref(storage, `data/projectMap.json`);
-                    getDownloadURL(projectMapReference)
-                    .then((url) => {
-                        $.getJSON(url, (projectMap) => {
-                            console.log(projectMap);
-                            const projectPath=projectMap[];
-                            displayStats(CLIENT_NAME, storage);
-        
-                            drawTop3Stats(CLIENT_NAME, 'picturedWith', 'picturedWithTop3', columnOneColors, storage, projectPath);
-                            drawTop3Stats(CLIENT_NAME, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage, projectPath);
-                            drawTop3Stats(CLIENT_NAME, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage, projectPath);
-                            drawBarGraph(CLIENT_NAME, 'photoTaker', storage, projectPath);
-                            
-                            $('#monthGraphPhotoTakerButton').on('click', () => {
-                                drawBarGraph(CLIENT_NAME,'photoTaker', storage, projectPath);
-                            });
-                            
-                            $('#monthGraphPhotoSubjectButton').on('click', () => {
-                                drawBarGraph(CLIENT_NAME, 'subject', storage, projectPath);
-                            });
-        
-                            drawDonut(CLIENT_NAME, storage, projectPath);
-                            drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage, projectPath);
-                            drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage, projectPath);
-                            drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage, projectPath);
-                            drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage, projectPath);
-                            
-                            $('.authenticateSection').fadeOut('fast', () => {
-                                $('.scroller').fadeIn("slow");
-                            });
-                        });
-                    });
-                    
-                    // TODO
-                    while ('nextPageToken' in mediaResponse) {
-                        alert('todo');
-                    }
-                }, (err) => {
-                    console.error('Error loading album client for API', err);
                 });
-            }
+            }));
+            Promise.all(iconPromises).then((iconData) => {
+                drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage, projectPath, iconData);
+                drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage, projectPath, iconData);
+                drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage, projectPath, iconData);
+                drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage, projectPath, iconData);
+            })
+            
+
+
+            displayStats(CLIENT_NAME, storage, projectPath);
+
+            drawTop3Stats(CLIENT_NAME, 'picturedWith', 'picturedWithTop3', columnOneColors, storage, projectPath);
+            drawTop3Stats(CLIENT_NAME, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage, projectPath);
+            drawTop3Stats(CLIENT_NAME, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage, projectPath);
+            drawBarGraph(CLIENT_NAME, 'photoTaker', storage, projectPath);
+            
+            $('#monthGraphPhotoTakerButton').on('click', () => {
+                drawBarGraph(CLIENT_NAME,'photoTaker', storage, projectPath);
+            });
+            
+            $('#monthGraphPhotoSubjectButton').on('click', () => {
+                drawBarGraph(CLIENT_NAME, 'subject', storage, projectPath);
+            });
+
+            drawDonut(CLIENT_NAME, storage, projectPath);
+            
+            
+            $('.authenticateSection').fadeOut('fast', () => {
+                $('.scroller').fadeIn("slow");
+            });
         });
-        $('.loader').fadeOut();
-    }, (err) => {
-        console.error('Execute error', err);
     });
+    $('.loader').fadeOut();
 };
