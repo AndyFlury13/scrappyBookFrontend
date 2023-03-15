@@ -246,14 +246,14 @@ body {
 }
 
 
-#monthGraphAndButtons {
+#timeGraphAndButtons {
     float: left;
     width: 50%;
     display: grid;
     margin:auto;
 }
 
-.monthGraphButtons {
+.timeGraphButtons {
     display: grid;
     grid-template-columns: 50% 50%;
     justify-items: center;
@@ -261,7 +261,7 @@ body {
     height: 20vh;
 }
 
-.monthGraphButtons > div {
+.timeGraphButtons > div {
     text-decoration:none;
     display: inline-block;
     opacity: 1;
@@ -269,49 +269,49 @@ body {
     font-size: 20px;
 }
 
-#monthGraphPhotoTakerButton {
+#timeGraphPhotoTakerButton {
     grid-column-start: 1;
     grid-column-end: 2;
 }
 
-#monthGraphPhotoSubjectButton {
+#timeGraphPhotoSubjectButton {
     grid-column-start: 2;
     grid-column-end: 3;
 }
 
-.monthGraphYAxis {
+.timeGraphYAxis {
     font: 20px trebuchet;
 }
 
-.monthGraphYAxis path {
+.timeGraphYAxis path {
     stroke: white;
 }
 
-.monthGraphYAxis line {
+.timeGraphYAxis line {
     stroke: white;
 }
 
-.monthGraphYAxis text {
+.timeGraphYAxis text {
     fill: white;
 }
 
-.monthGraphXAxis path {
+.timeGraphXAxis path {
     stroke: white;
 }
 
-.monthGraphXAxis line {
+.timeGraphXAxis line {
     stroke: white;
 }
 
-.monthGraphXAxis text {
+.timeGraphXAxis text {
     fill: white;
 }
 
-.monthGraphXAxis {
+.timeGraphXAxis {
     font: 20px trebuchet;
 }
 
-#monthPhotos {
+#timePhotos {
     width: 50%;
     float: right;
 }
@@ -361,7 +361,7 @@ body {
     margin:auto; /* center the content so it will slide from the midddle to the left and right */
 }
  
-.monthGraphButtons > div:hover {
+.timeGraphButtons > div:hover {
     cursor: pointer;
     opacity: .5;
 }

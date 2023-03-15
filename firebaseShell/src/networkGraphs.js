@@ -7,6 +7,10 @@ import {
 } from "./imageLoader.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
+export const HD_NAMES = ['me', 'girlBoss', 'shirleyWhirley', 'dumbestKid', 'yuppie', 'bugBoy', 'emily', 'other', 'jiusus', 'chimu'];
+export const MAUI_NAMES = ['Andrew', 'Dalton', 'Sean', 'Cynthia', 'Haider', 'Ishan', 'Nicco', 'Megan'];
+                    
+
 const networkMargin = {
     top: 0, right: 0, bottom: 0, left: 0,
 };
@@ -27,8 +31,6 @@ const CLICKED_ELEMENT = {
 };
 var defsLoaded = false;
 export const CIRCLES_STROKE_WIDTH = 2;
-export const NAMES = ['me', 'girlBoss', 'shirleyWhirley', 'dumbestKid', 'yuppie', 'bugBoy', 'emily', 'other', 'jiusus', 'chimu'];
-export const MAUI_NAMES = ['Andrew', 'Dalton', 'Sean', 'Cynthia', 'Haider', 'Ishan', 'Nicco', 'Megan'];
 // append the svg object to the body of the page
 export const clientPicturedWithSVG = d3.select('#clientPicturedWithGraph')
     .append('svg')
@@ -88,7 +90,7 @@ const getCombinedPicNum = (d) => {
 };
 
 // The TS graph is the most complicated one, so we define its own processing function
-const processTSData = (takerSubjectData, storage, projectPath) => new Promise((resolve) => {
+const processTSData = (takerSubjectData, storage, projectPath, names) => new Promise((resolve) => {
     const reference = storageRef(storage, `data/${projectPath}/subjectTaker.csv`);
     getDownloadURL(reference)
         .then((url) => {
@@ -98,7 +100,7 @@ const processTSData = (takerSubjectData, storage, projectPath) => new Promise((r
                     return;
                 }
                 const networkData = { nodes: [], links: [] };
-                NAMES.forEach((name, nameI) => {
+                names.forEach((name, nameI) => {
                     networkData.nodes.push({
                         id: nameI,
                         name,
@@ -128,9 +130,9 @@ const processTSData = (takerSubjectData, storage, projectPath) => new Promise((r
         });
 });
 
-const processData = (clientName, data) => new Promise((resolve) => {
+const processData = (clientName, data, names) => new Promise((resolve) => {
     const networkData = { nodes: [], links: [] };
-    NAMES.forEach((name, nameI) => {
+    names.forEach((name, nameI) => {
         networkData.nodes.push({
             id: nameI,
             name,
@@ -304,7 +306,7 @@ const clearNetworkStats = (clientName) => {
     });
 };
 
-export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, storage, projectPath, iconData) => {
+export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, storage, projectPath, iconData, names) => {
     const reference = storageRef(storage, `data/${projectPath}/${dataFileName}.csv`);
     getDownloadURL(reference)
         .then((url) => {
@@ -314,8 +316,8 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                     return;
                 }
                 const processPromise = clientName === 'totalTS'
-                    ? processTSData(data, storage, projectPath)
-                    : processData(clientName, data);
+                    ? processTSData(data, storage, projectPath, names)
+                    : processData(clientName, data, names);
                 processPromise.then((dataAndMostPicIds) => {
                     const networkData = dataAndMostPicIds.networkData;
                     const mostPicIds = dataAndMostPicIds.mostPicIds;
@@ -361,7 +363,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                 PROMISES[pictureDivName].then(() => {
                                     ON_CONTAINER[pictureDivName] = true;
                                     if (IMG_CHANGE_CONTAINER[pictureDivName]) {
-                                        PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER);
+                                        PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER, projectPath, storage);
                                     }
                                 });
                             }
@@ -484,7 +486,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                         PROMISES[pictureDivName].then(() => {
                                             ON_CONTAINER[pictureDivName] = true;
                                             if (IMG_CHANGE_CONTAINER[pictureDivName]) {
-                                                PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER);
+                                                PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER, projectPath, storage);
                                             }
                                         });
                                     }

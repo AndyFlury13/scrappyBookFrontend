@@ -1,20 +1,22 @@
+import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+
 let LOCKED = false;
 export const ON_CONTAINER = {
     clientPicturedWith: false,
     clientTakerSubject: false,
-    month: false,
+    time: false,
     donut: false,
 };
 export const IMG_CHANGE_CONTAINER = {
     clientPicturedWith: true,
     clientTakerSubject: true,
-    month: true,
+    time: true,
     donut: true,
 };
 export const DISPLAYED_TARGETS = {
     clientPicturedWith: '',
     clientTakerSubject: '',
-    month: '',
+    time: '',
     donut: '',
     totalPW: '',
     totalTS: '',
@@ -26,29 +28,24 @@ export const PROMISES = {
     clientTakerSubject: new Promise((resolve) => {
         resolve(IMG_CHANGE_CONTAINER.clientTakerSubject);
     }),
-    month: new Promise((resolve) => {
-        resolve(IMG_CHANGE_CONTAINER.month);
+    time: new Promise((resolve) => {
+        resolve(IMG_CHANGE_CONTAINER.time);
     }),
     donut: new Promise((resolve) => {
         resolve(IMG_CHANGE_CONTAINER.donut);
     }),
 };
-const loadImage = (photoDivName, imgID) => new Promise((resolve, reject) => {
-    gapi.client.photoslibrary.mediaItems.get({
-        mediaItemId: imgID,
-    }).then((response) => {
-        $(`<img class='displayedPhoto' id='${response.result.id}' src='${response.result.baseUrl}'/>`).prependTo(`#${photoDivName}Photos`);
-        $(`#${response.result.id}`).on('load', () => {
-            $(`#${response.result.id}`).animate({
+const loadImage = (photoDivName, imgID, projectPath, storage) => new Promise((resolve, reject) => {
+    const imageRef = ref(storage, `photos/${projectPath}/${imgID}.jpg`)
+    getDownloadURL(imageRef).then((url) => {
+        $(`<img class='displayedPhoto' id='${imgID}' src='${url}'/>`).prependTo(`#${photoDivName}Photos`);
+        $(`#${imgID}`).on('load', () => {
+            $(`#${imgID}`).animate({
                 opacity: 1,
             }, 400, () => {
                 resolve(null);
             });
         });
-    }, (err) => {
-        console.log(imgID);
-        reject(err);
-        resolve(null);
     });
 });
 const removeImage = (pictureToRemoveID, timeToDisappear) => new Promise((resolve) => {
@@ -60,12 +57,12 @@ const removeImage = (pictureToRemoveID, timeToDisappear) => new Promise((resolve
         resolve(null);
     });
 });
-export const slideshow = (photoDivName, imgIDs, slideshowOnContainer, imgChangeContainer) => new Promise((resolve) => {
+export const slideshow = (photoDivName, imgIDs, slideshowOnContainer, imgChangeContainer, projectPath, storage) => new Promise((resolve) => {
     let imgIDsI = 0;
     let timer = 0;
     const imageDisplayLength = 350;
     let displayedImgID = imgIDs[imgIDsI];
-    loadImage(photoDivName, displayedImgID);
+    loadImage(photoDivName, displayedImgID, projectPath, storage);
     const imgCycler = setInterval(() => {
         let slideshowOn = slideshowOnContainer[photoDivName];
         if (!slideshowOn) {
@@ -90,7 +87,7 @@ export const slideshow = (photoDivName, imgIDs, slideshowOnContainer, imgChangeC
                 displayedImgID = imgIDs[imgIDsI];
                 slideshowOn = slideshowOnContainer[photoDivName];
                 if (slideshowOn) {
-                    loadImage(photoDivName, displayedImgID).then(() => {
+                    loadImage(photoDivName, displayedImgID, projectPath, storage).then(() => {
                         LOCKED = false;
                     });
                 }

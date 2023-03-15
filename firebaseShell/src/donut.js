@@ -57,7 +57,7 @@ const drawTooltip = (div, text, x, y) => {
 export const highlightDonutSections = (oldCategory, newCategory) => {
     if (oldCategory === 'none') {
         donutSVG.selectAll('path')
-            .filter((d) => {console.log(d); return newCategory !== d.data.key})
+            .filter((d) => newCategory !== d.data.key)
             .transition()
             .duration(1000)
             .style('opacity', .3);
@@ -154,7 +154,6 @@ export const drawDonut = (clientName, storage, projectPath) => {
                         .outerRadius(radius)
                     )
                     .attr('fill', (d) => {
-                        console.log(d);
                         return getColor(d.data.key);
                     })
                     .attr("stroke", "#333333")
@@ -172,6 +171,7 @@ export const drawDonut = (clientName, storage, projectPath) => {
                     })
                     .on('click', (d) => {
                         const imgIDs = d.data.value.picIDs?.split(',')?.slice(0, -1) ?? [];
+
                         if (d.data.key === DISPLAYED_TARGETS.donut) {
                             IMG_CHANGE_CONTAINER.donut = false;
                             ON_CONTAINER.donut = false;
@@ -191,7 +191,7 @@ export const drawDonut = (clientName, storage, projectPath) => {
                             PROMISES.donut.then(() => {
                                 ON_CONTAINER.donut = true;
                                 if (IMG_CHANGE_CONTAINER.donut) {
-                                    PROMISES.donut = slideshow('donut', imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER);
+                                    PROMISES.donut = slideshow('donut', imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER, projectPath, storage);
                                 }
                             });
                         }

@@ -4,12 +4,12 @@ import {
     clientTakerSubjectSVG, 
     drawNetwork,
     MAUI_NAMES,
-    NAMES,
+    HD_NAMES,
     totalPWSVG,
     totalTSSVG
 } from "./networkGraphs.js";
 import { displayStats } from './stats.js';
-import { drawBarGraph } from "./monthGraph.js";
+import { drawBarGraph } from "./timeGraph.js";
 import { drawTop3Stats, columnOneColors, columnTwoColors, columnThreeColors } from "./top3Stats.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -19,7 +19,7 @@ let CLIENT_NAME;
 let CREDENTIALS;
 let tokenClient;
 
-const emailToClientName = {
+const hdEmailToClientName = {
     'andrewflury@berkeley.edu':'me',
     'shirleywang57@berkeley.edu': 'shirleyWhirley',
     'justintwong@berkeley.edu': 'yuppie',
@@ -29,6 +29,10 @@ const emailToClientName = {
     'jiuchang@berkeley.edu': 'jiusus',
     'chinmayee_vw@berkeley.edu': 'chimu',
     'ezhang10@berkeley.edu': 'emily'
+}
+
+const mauiEmailToClientName = {
+    'andrewflury@berkeley.edu': 'Andrew'
 }
 
 const firebaseConfig = {
@@ -47,37 +51,42 @@ const auth = getAuth(app);
 
 
 $( window ).on('load', () => {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: '830400570958-cjqakcuq9hcidb5btmmikoe4bjfpjkrn.apps.googleusercontent.com',
-        scope: 'https://www.googleapis.com/auth/photoslibrary https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
-        callback: ''
-    });
+    
 });
 
 $('.fbAuthenticateBtn').on('click', () => {
     $('.fbAuthenticateBtn').fadeOut("fast", () => {
         $('.loader').fadeIn("fast");
         signInWithPopup(auth, provider).then(async (result) => {
-            CLIENT_NAME = emailToClientName[result.user.email];
             const storage = getStorage(app);
-            const reference = ref(storage, 'credentials/gpAPICredentials.json');
-            getDownloadURL(reference).then((url) => {
-                $.getJSON(url).done((credentials) => {
-                    CREDENTIALS = credentials;
-                    gapi.load('client', initializeGapiClient);
-                    $('.loader').fadeOut(() => {
-                        $('.gpAuthenticateBtn').fadeIn();
-                        $('.gpAuthenticateBtn').on('click', () => {
-                            handleAuthClick(result.user.email);
+            const projectMapReference = ref(storage, `data/projectMap.json`);
+            getDownloadURL(projectMapReference).then((url) => {
+                $.getJSON(url, (projectMap) => {
+                    const projectPath = projectMap['andrewflury@berkeley.edu'];
+                    const emailToClientName = projectPath === 'maui'
+                        ? mauiEmailToClientName
+                        : hdEmailToClientName;
+                    CLIENT_NAME = emailToClientName['andrewflury@berkeley.edu'];
+                    const reference = ref(storage, `credentials/${projectPath}/gpAPICredentials.json`);
+                    getDownloadURL(reference).then((url) => {
+                        $.getJSON(url).done((credentials) => {
+                            CREDENTIALS = credentials;
+                            gapi.load('client', initializeGapiClient);
+                            $('.loader').fadeOut(() => {
+                                $('.gpAuthenticateBtn').fadeIn();
+                                $('.gpAuthenticateBtn').on('click', () => {
+                                    handleAuthClick(projectPath, storage);
+                                });
+                            });
                         });
+                    }).catch((err) => {
+                        console.log(err);
                     });
-                });
-            }).catch((err) => {
-                console.log(err);
+                }).catch((err) => {
+                    console.log(err);
+                }); 
             });
-        }).catch((err) => {
-            console.log(err);
-        })
+        });
     });
 });
 
@@ -88,17 +97,29 @@ const initializeGapiClient = async () => {
     });
 };
 
-const handleAuthClick = (email) => {
+
+
+
+const handleAuthClick = (projectPath, storage) => {
     $('.gpAuthenticateBtn').fadeOut("fast", () => {
         $('.loader').fadeIn("fast");
     });
-    
+    const clientId = projectPath === 'maui'
+        ? '410458645287-mj05ilb17q8aeklf90m5nq6u85oa5b84.apps.googleusercontent.com'
+        : '830400570958-cjqakcuq9hcidb5btmmikoe4bjfpjkrn.apps.googleusercontent.com';
+
+
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'https://www.googleapis.com/auth/photoslibrary https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
+        callback: ''
+    });
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) {
             throw (resp);
         }
         console.log(resp);
-        await loadGraphs(email);
+        loadGraphs(projectPath, storage);
     };
 
     if (gapi.client.getToken() === null) {
@@ -109,55 +130,47 @@ const handleAuthClick = (email) => {
         // Skip display of account chooser and consent dialog for an existing session.
         tokenClient.requestAccessToken({prompt: ''});
     }
+    
 };
 
-const loadGraphs = (email) => {
-    const storage = getStorage(app);
-    const projectMapReference = ref(storage, `data/projectMap.json`);
-    getDownloadURL(projectMapReference).then((url) => {
-        $.getJSON(url, (projectMap) => {
-            const projectPath=projectMap[email];
-            const names = projectPath === 'maui' ? MAUI_NAMES : NAMES;
-            const iconPromises = names.map((iconSubject) => new Promise((resolve, reject) => {
-                const iconPhotoReference = ref(storage, `data/${projectPath}/iconPhotos/${iconSubject}.png`);
-                getDownloadURL(iconPhotoReference).then((fbUrl) => {
-                    resolve({
-                        name: iconSubject,
-                        url: fbUrl
-                    });
-                });
-            }));
-            Promise.all(iconPromises).then((iconData) => {
-                drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage, projectPath, iconData);
-                drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage, projectPath, iconData);
-                drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage, projectPath, iconData);
-                drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage, projectPath, iconData);
-            })
-            
-
-
-            displayStats(CLIENT_NAME, storage, projectPath);
-
-            drawTop3Stats(CLIENT_NAME, 'picturedWith', 'picturedWithTop3', columnOneColors, storage, projectPath);
-            drawTop3Stats(CLIENT_NAME, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage, projectPath);
-            drawTop3Stats(CLIENT_NAME, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage, projectPath);
-            drawBarGraph(CLIENT_NAME, 'photoTaker', storage, projectPath);
-            
-            $('#monthGraphPhotoTakerButton').on('click', () => {
-                drawBarGraph(CLIENT_NAME,'photoTaker', storage, projectPath);
-            });
-            
-            $('#monthGraphPhotoSubjectButton').on('click', () => {
-                drawBarGraph(CLIENT_NAME, 'subject', storage, projectPath);
-            });
-
-            drawDonut(CLIENT_NAME, storage, projectPath);
-            
-            
-            $('.authenticateSection').fadeOut('fast', () => {
-                $('.scroller').fadeIn("slow");
+const loadGraphs = (projectPath, storage) => {
+    const names = projectPath === 'maui' ? MAUI_NAMES : HD_NAMES;
+    const iconPromises = names.map((iconSubject) => new Promise((resolve, reject) => {
+        const iconPhotoReference = ref(storage, `data/${projectPath}/iconPhotos/${iconSubject}.png`);
+        getDownloadURL(iconPhotoReference).then((fbUrl) => {
+            resolve({
+                name: iconSubject,
+                url: fbUrl
             });
         });
+    }));
+    Promise.all(iconPromises).then((iconData) => {
+        drawNetwork(CLIENT_NAME, 'picturedWith', clientPicturedWithSVG, 'clientPicturedWith', storage, projectPath, iconData, names);
+        drawNetwork(CLIENT_NAME, 'takerSubject', clientTakerSubjectSVG, 'clientTakerSubject', storage, projectPath, iconData, names);
+        drawNetwork('totalPW', 'picturedWith', totalPWSVG, 'totalPW', storage, projectPath, iconData, names);
+        drawNetwork('totalTS', 'takerSubject', totalTSSVG, 'totalTS', storage, projectPath, iconData, names);
+    });
+
+    displayStats(CLIENT_NAME, storage, projectPath);
+
+    drawTop3Stats(CLIENT_NAME, 'picturedWith', 'picturedWithTop3', columnOneColors, storage, projectPath);
+    drawTop3Stats(CLIENT_NAME, 'subjectTaker', 'asSubjectTop3', columnTwoColors, storage, projectPath);
+    drawTop3Stats(CLIENT_NAME, 'takerSubject', 'asPhototakerTop3', columnThreeColors, storage, projectPath);
+    drawBarGraph(CLIENT_NAME, 'photoTaker', storage, projectPath);
+    
+    $('#timeGraphPhotoTakerButton').on('click', () => {
+        drawBarGraph(CLIENT_NAME,'photoTaker', storage, projectPath);
+    });
+    
+    $('#timeGraphPhotoSubjectButton').on('click', () => {
+        drawBarGraph(CLIENT_NAME, 'subject', storage, projectPath);
+    });
+
+    drawDonut(CLIENT_NAME, storage, projectPath);
+    
+    
+    $('.authenticateSection').fadeOut('fast', () => {
+        $('.scroller').fadeIn("slow");
     });
     $('.loader').fadeOut();
-};
+}
