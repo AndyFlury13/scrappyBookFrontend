@@ -5,6 +5,7 @@ import {
     PROMISES,
     slideshow 
 } from "./imageLoader.js";
+import {getNumberOfIds} from "./timeGraph.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
 export const HD_NAMES = ['me', 'girlBoss', 'shirleyWhirley', 'dumbestKid', 'yuppie', 'bugBoy', 'emily', 'other', 'jiusus', 'chimu'];
@@ -84,8 +85,8 @@ const processTarget = (targetName, targetData, clientName, networkData) => {
 };
 
 const getCombinedPicNum = (d) => {
-    const tsLength = d.takerSubjectPicIDs?.split(',')?.slice(0, -1)?.length ?? 0;
-    const stLength = d.subjectTakerPicIDs?.split(',')?.slice(0, -1)?.length ?? 0;
+    const tsLength = getNumberOfIds(d.takerSubjectPicIDs);
+    const stLength = getNumberOfIds(d.subjectTakerPicIDs);
     return tsLength + stLength;
 };
 
@@ -142,7 +143,7 @@ const processData = (clientName, data, names) => new Promise((resolve) => {
         if (pwRow.client === clientName || clientName === 'totalPW') {
             return Math.max(...Object.entries(pwRow).map(([targetName, targetData]) => {
                 if (targetName !== 'client') {
-                    return targetData.split(',').slice(0, -1).length;
+                    return getNumberOfIds(targetData);
                 }
                 return 0;
             }));
@@ -289,8 +290,8 @@ const displayPWStats = (imgIds) => {
     });
 };
 const displayTSStats = (d) => {
-    const sourceOfTargetLength = d.takerSubjectPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
-    const targetOfSourceLength = d.subjectTakerPicIDs?.split(',')?.slice(0, -1)?.length ?? 1;
+    const sourceOfTargetLength = getNumberOfIds(d.takerSubjectPicIDs);
+    const targetOfSourceLength = getNumberOfIds(d.subjectTakerPicIDs);
     $('.explanation-totalTS').animate({ opacity: 0 }, 200, () => {
         $('.explanation-totalTS').html(`${d.sourceName} has taken ${sourceOfTargetLength} pictures of ${d.targetName}
     <br/> ${d.targetName} has taken ${targetOfSourceLength} pictures of ${d.sourceName}`).animate({ opacity: 1 }, 200);
@@ -335,7 +336,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         .style('stroke-width', (d) => {
                         const numPicIDs = clientName === 'totalTS'
                             ? getCombinedPicNum(d)
-                            : d.picIDs?.split(',')?.slice(0, -1)?.length ?? 0;
+                            : getNumberOfIds(d.picIDs);
                         const width = Math.ceil((maxLinkWidth * (numPicIDs)) / mostPicIds);
                         return width;
                     })

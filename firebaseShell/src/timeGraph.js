@@ -115,6 +115,17 @@ const highlightRectangles = (className, oldCategory, newCategory) => {
     }
 };
 
+export const getNumberOfIds = (idString) => {
+    let numIds = 0;
+    const ids = idString.split(",")
+    ids.forEach((id) => {
+        if (id !== "") {
+            numIds += 1;
+        }
+    });
+    return numIds
+}
+
 export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) => {
     const shortenedTimes = projectPath === 'maui'
         ? shortenedDays
@@ -126,7 +137,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
     rainbow.setNumberRange(0, TIMES.length);
     rainbow.setSpectrum('#ff8600', '#fffe37');
     for (let timeI = 0; timeI < TIMES.length; timeI++) {
-        TIMES[timeI].color += rainbow.colourAt(timeI);
+        TIMES[timeI].color = rainbow.colourAt(timeI);
     }
     if (subjectOrTaker !== CURRENT_SUBJECT_OR_TAKER) {
         $('.slide-in-out-photoTaker').toggleClass('slide');
@@ -174,7 +185,6 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                     }
                                 }
                             }
-                            console.log(clientData);
                            
                             // X axis
                             timeGraphX.domain(clientData.map((d) => d.time));
@@ -182,7 +192,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                 
                             // Add Y axis
                             timeGraphY.domain([0, d3.max(clientData, (d) => {
-                                return +(d[subjectOrTaker].split(',').length - 1);
+                                return +(getNumberOfIds(d[subjectOrTaker]));
                             })]);
                             timeGraphYAxis.transition().duration(1000).call(d3.axisLeft(timeGraphY));
                             // variable u: map data to existing bars
@@ -224,9 +234,9 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                 .transition()
                                 .duration(1000)
                                 .attr('x', (d) => timeGraphX(d.time))
-                                .attr('y', (d) => timeGraphY(d[subjectOrTaker].split(',').length))
+                                .attr('y', (d) => timeGraphY(getNumberOfIds(d[subjectOrTaker])))
                                 .attr('width', timeGraphX.bandwidth())
-                                .attr('height', (d) => timeGraphHeight - timeGraphY(d[subjectOrTaker].split(',').length))
+                                .attr('height', (d) => timeGraphHeight - timeGraphY(getNumberOfIds(d[subjectOrTaker])))
                                 .attr('fill', (d) => d.color);
                         });
                     })
