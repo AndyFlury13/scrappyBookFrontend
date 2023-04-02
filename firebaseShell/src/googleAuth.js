@@ -57,7 +57,11 @@ $( window ).on('load', () => {
 $('.fbAuthenticateBtn').on('click', () => {
     $('.fbAuthenticateBtn').fadeOut("fast", () => {
         $('.loader').fadeIn("fast");
-        signInWithPopup(auth, provider).then(async (result) => {
+        signInWithPopup(auth, provider).then(async (_) => {
+            if (error) {
+                throw "Failed to sign in";
+                console.log(error);
+            }
             const storage = getStorage(app);
             const projectMapReference = ref(storage, `data/projectMap.json`);
             getDownloadURL(projectMapReference).then((url) => {
@@ -86,6 +90,9 @@ $('.fbAuthenticateBtn').on('click', () => {
                     console.log(err);
                 }); 
             });
+        }).catch((error) => {
+            console.error(error);
+            handleAuthError();
         });
     });
 });
@@ -116,7 +123,8 @@ const handleAuthClick = (projectPath, storage) => {
     });
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) {
-            throw (resp);
+            handleAuthError();
+            return
         }
         console.log(resp);
         loadGraphs(projectPath, storage);
@@ -173,4 +181,10 @@ const loadGraphs = (projectPath, storage) => {
         $('.scroller').fadeIn("slow");
     });
     $('.loader').fadeOut();
+}
+
+const handleAuthError = () => {
+    $('.loader').fadeOut();
+    $('.authenticateError').fadeIn();
+    $('body').css({ 'background-color': 'rgba(252,252,252,1)' });
 }

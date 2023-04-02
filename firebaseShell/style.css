@@ -38,6 +38,13 @@ body {
     z-index: 1;
 }
 
+.authenticateError {
+    display: none;
+    text-align: center;
+    padding-left: 80px;
+    padding-right: 80px;
+}
+
 .authenticateBtn {
     padding: 20px;
     z-index: 2;
