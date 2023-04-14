@@ -44,7 +44,17 @@ export const displayStats = (clientName, storage, storagePath) => {
                                     $('.introBlurb2').fadeIn(4000, () => {
                                         $('.introBlurb3').html("Let's take a look at some of them.").promise().done(() => {
                                             $('.introBlurb3').fadeIn(2000, () => {
-                                                $('.downArrow').fadeIn(500);
+                                                $('.introBlurb4').html(
+                                                    `<s>if you had a UX engineer you wouldn't need this section</s><br>
+                                                    How to explore this webapp!
+                                                    This is an arrow key friendly household. No love for AWSD.
+                                                    <ul>
+                                                        <li>You can use the up and down arrow key (or scroll) to navigate between sections.</li>
+                                                        <li>Once an image is displayed, you can use the left and right arrow keys to move through the slideshow.</li>
+                                                    </ul>`
+                                                ).promise().done(()=> {
+                                                    $('.introBlurb4').fadeIn(2000);
+                                                })
                                             });
                                         });
                                     });

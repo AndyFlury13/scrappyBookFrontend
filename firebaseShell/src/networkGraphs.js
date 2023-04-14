@@ -1,9 +1,11 @@
 import { 
     DISPLAYED_TARGETS, 
-    IMG_CHANGE_CONTAINER, 
-    ON_CONTAINER,
-    PROMISES,
-    slideshow 
+    SECTION_TO_IMG_IDS,
+    SECTION_TO_SLIDESHOW_INDEX,
+    SECTION_TO_SLIDESHOW_IS_ACTIVE,
+    SECTION_TO_SLIDESHOW_LENGTH,
+    loadImage,
+    removeImage
 } from "./imageLoader.js";
 import {getNumberOfIds} from "./timeGraph.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
@@ -53,14 +55,14 @@ export const totalPWSVG = d3.select('#totalPWGraph')
     .attr('height', totalNetworkHeight)
     .attr('width', totalNetworkHeight)
     .append('g')
-    .attr('transform', `translate(${totalNetworkHeight / 2},${totalNetworkHeight / 2})`);
+    .attr('transform', `translate(${totalNetworkHeight / 2},${(totalNetworkHeight / 2)-20})`);
 export const totalTSSVG = d3.select('#totalTSGraph')
     .append('svg')
     .classed('centeredSVG', true)
     .attr('height', totalNetworkHeight)
     .attr('width', totalNetworkHeight)
     .append('g')
-    .attr('transform', `translate(${totalNetworkHeight / 2},${totalNetworkHeight / 2})`);
+    .attr('transform', `translate(${totalNetworkHeight / 2},${(totalNetworkHeight / 2)-20})`);
 const getIDFromName = (name, nodeList) => {
     let id = 'error';
     nodeList.forEach((node) => {
@@ -307,6 +309,18 @@ const clearNetworkStats = (clientName) => {
     });
 };
 
+const displayDefaultExplanation = (pictureDivName) => {
+    $(`.explanation-${pictureDivName}`).fadeOut(() => {
+        const explanationText = 'Click the graph elements to load images.<br/>Every edge from you to someone else represents pictures you' +
+        `${pictureDivName === 'clientTakerSubject' 
+            ? '\'ve taken of'
+            : ' appear in with'
+        }` +
+        ' them';
+        $(`.explanation-${pictureDivName}`).html(explanationText);
+    }).fadeIn();
+}
+
 export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, storage, projectPath, iconData, names) => {
     const reference = storageRef(storage, `data/${projectPath}/${dataFileName}.csv`);
     getDownloadURL(reference)
@@ -341,86 +355,92 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         return width;
                     })
                         .on('click', (d) => {
-                        const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];;
-                        if (clientName !== 'totalPW' && clientName !== 'totalTS') {
-                            if (d.targetName === DISPLAYED_TARGETS[pictureDivName]) {
-                                IMG_CHANGE_CONTAINER[pictureDivName] = false;
-                                ON_CONTAINER[pictureDivName] = false;
-                                DISPLAYED_TARGETS[pictureDivName] = '';
-                                CLICKED_ELEMENT[pictureDivName] = '';
-                                highlightLink({ sourceName: clientName, targetName: DISPLAYED_TARGETS[pictureDivName] }, { sourceName: clientName, targetName: d.targetName }, false, false, pictureDivName);
-                            }
-                            else {
-                                if (CLICKED_ELEMENT[pictureDivName] === 'node') {
+                            const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];;
+                            if (clientName !== 'totalPW' && clientName !== 'totalTS') { // individual graphs
+                                if (d.targetName === DISPLAYED_TARGETS[pictureDivName]) { // turn off visual
+                                    // Network aeshetics
                                     DISPLAYED_TARGETS[pictureDivName] = '';
-                                    highlightNode('', '', clientName, false, false, pictureDivName);
-                                }
-                                highlightLink({ sourceName: clientName, targetName: DISPLAYED_TARGETS[pictureDivName] }, { sourceName: clientName, targetName: d.targetName }, true, false, pictureDivName);
-                                IMG_CHANGE_CONTAINER[pictureDivName] = true;
-                                CLICKED_ELEMENT[pictureDivName] = 'link';
-                                $(`.explanation-${pictureDivName}`).fadeOut('fast');
-                                ON_CONTAINER[pictureDivName] = false;
-                                DISPLAYED_TARGETS[pictureDivName] = d.targetName;
-                                PROMISES[pictureDivName].then(() => {
-                                    ON_CONTAINER[pictureDivName] = true;
-                                    if (IMG_CHANGE_CONTAINER[pictureDivName]) {
-                                        PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER, projectPath, storage);
+                                    CLICKED_ELEMENT[pictureDivName] = '';
+                                    highlightLink({ sourceName: clientName, targetName: DISPLAYED_TARGETS[pictureDivName] }, { sourceName: clientName, targetName: d.targetName }, false, false, pictureDivName);
+                                
+                                    // Picture stuff
+                                    SECTION_TO_SLIDESHOW_IS_ACTIVE[pictureDivName] = false;
+                                    removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
+                                        displayDefaultExplanation(pictureDivName);
+                                    });
+                                } else { 
+                                    // Network aeshetics
+                                    if (CLICKED_ELEMENT[pictureDivName] === 'node') {
+                                        DISPLAYED_TARGETS[pictureDivName] = '';
+                                        highlightNode('', '', clientName, false, false, pictureDivName);
                                     }
-                                });
-                            }
-                        }
-                        else if (d.targetName === DISPLAYED_TARGETS[pictureDivName]
-                            || d.sourceName === DISPLAYED_TARGETS[pictureDivName]) {
-                            highlightLink({ sourceName: clientName, targetName: DISPLAYED_TARGETS[pictureDivName] }, { sourceName: clientName, targetName: d.targetName }, false, true, pictureDivName);
-                            if (CLICKED_ELEMENT[pictureDivName] === 'node') {
-                                highlightLink({ sourceName: '', targetName: '' }, { sourceName: d.sourceName, targetName: d.targetName }, true, true, pictureDivName);
+                                    highlightLink({ sourceName: clientName, targetName: DISPLAYED_TARGETS[pictureDivName] }, { sourceName: clientName, targetName: d.targetName }, true, false, pictureDivName);
+                                    CLICKED_ELEMENT[pictureDivName] = 'link';
+                                    DISPLAYED_TARGETS[pictureDivName] = d.targetName;
+
+                                    // Picture stuff
+                                    SECTION_TO_SLIDESHOW_IS_ACTIVE[pictureDivName] = true;
+                                    $(`.explanation-${pictureDivName}`).fadeOut('fast');
+                                    SECTION_TO_SLIDESHOW_LENGTH[pictureDivName] = imgIDs.length;
+                                    SECTION_TO_IMG_IDS[pictureDivName] = imgIDs;
+                                    const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[pictureDivName];
+                                    const imgId = imgIDs[imgIdIndex];
+                                    removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
+                                        loadImage(pictureDivName, imgId, projectPath, storage)
+                                    });
+                                    
+                                }
+                            } else if (d.targetName === DISPLAYED_TARGETS[pictureDivName]
+                                || d.sourceName === DISPLAYED_TARGETS[pictureDivName]) {
+                                highlightLink({ sourceName: clientName, targetName: DISPLAYED_TARGETS[pictureDivName] }, { sourceName: clientName, targetName: d.targetName }, false, true, pictureDivName);
+                                if (CLICKED_ELEMENT[pictureDivName] === 'node') {
+                                    highlightLink({ sourceName: '', targetName: '' }, { sourceName: d.sourceName, targetName: d.targetName }, true, true, pictureDivName);
+                                    if (clientName === 'totalTS') {
+                                        displayTSStats(d);
+                                    }
+                                    else {
+                                        displayPWStats(imgIDs);
+                                    }
+                                    CLICKED_ELEMENT[pictureDivName] = 'link';
+                                    DISPLAYED_TARGETS[pictureDivName] = d.sourceName;
+                                }
+                                else {
+                                    clearNetworkStats(clientName);
+                                    DISPLAYED_TARGETS[pictureDivName] = '';
+                                    CLICKED_ELEMENT[pictureDivName] = '';
+                                }
+                            } else {
                                 if (clientName === 'totalTS') {
                                     displayTSStats(d);
                                 }
                                 else {
                                     displayPWStats(imgIDs);
                                 }
+                                DISPLAYED_TARGETS[pictureDivName] = d.targetName;
                                 CLICKED_ELEMENT[pictureDivName] = 'link';
-                                DISPLAYED_TARGETS[pictureDivName] = d.sourceName;
+                                highlightLink({ sourceName: '', targetName: '' }, { sourceName: d.sourceName, targetName: d.targetName }, true, true, pictureDivName);
                             }
-                            else {
-                                clearNetworkStats(clientName);
-                                DISPLAYED_TARGETS[pictureDivName] = '';
-                                CLICKED_ELEMENT[pictureDivName] = '';
-                            }
-                        }
-                        else {
-                            if (clientName === 'totalTS') {
-                                displayTSStats(d);
-                            }
-                            else {
-                                displayPWStats(imgIDs);
-                            }
-                            DISPLAYED_TARGETS[pictureDivName] = d.targetName;
-                            CLICKED_ELEMENT[pictureDivName] = 'link';
-                            highlightLink({ sourceName: '', targetName: '' }, { sourceName: d.sourceName, targetName: d.targetName }, true, true, pictureDivName);
-                        }
-                    });
-                    const config = {
-                        avatar_size: 130, // define the size of the circle radius
-                    };
-                    if (!defsLoaded) {
-                        const body = d3.select('body');
-                        const definitionSVG = body.append('svg');
-                        const defs = definitionSVG.append('svg:defs');
-                        iconData.forEach((d) => {
-                            defs.append('svg:pattern')
-                                .attr('id', `${d.name}_icon`)
-                                .attr('patternContentUnits', 'objectBoundingBox')
-                                .attr('height', '1')
-                                .attr('width', '1')
-                                .append('svg:image')
-                                .attr('href', d.url)
-                                .attr('height', '1')
-                                .attr('width', '1');
                         });
-                        defsLoaded = true;
-                    }
+                        const config = {
+                            avatar_size: 130, // define the size of the circle radius
+                        };
+                        if (!defsLoaded) {
+                            const body = d3.select('body');
+                            const definitionSVG = body.append('svg');
+                            const defs = definitionSVG.append('svg:defs');
+                            iconData.forEach((d) => {
+                                defs.append('svg:pattern')
+                                    .attr('id', `${d.name}_icon`)
+                                    .attr('patternContentUnits', 'objectBoundingBox')
+                                    .attr('height', '1')
+                                    .attr('width', '1')
+                                    .append('svg:image')
+                                    .attr('href', d.url)
+                                    .attr('height', '1')
+                                    .attr('width', '1');
+                            });
+                            defsLoaded = true;
+                        }
                     // Initialize the nodes
                     const networkDataNode = svg
                         .selectAll('circle')
@@ -438,57 +458,54 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         .on('click', (d) => {
                             if (d.name !== clientName) {
                                 const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];
-                                if (imgIDs.length === 0) {
+                                if (imgIDs.length === 0) { // Clicking on a node without an edge
                                     if (d.name === DISPLAYED_TARGETS[pictureDivName]) { // clearing the display
                                         highlightNode('', d.name, clientName, false, false, pictureDivName);
                                         DISPLAYED_TARGETS[pictureDivName] = '';
                                         CLICKED_ELEMENT[pictureDivName] = '';
-                                        $(`.explanation-${pictureDivName}`).fadeOut(() => {
-                                            const explanationText = 'Click the graph elements to load images.<br/>Every edge from you to someone else represents pictures you' +
-                                            `${pictureDivName === 'clientTakerSubject' 
-                                                ? '\'ve taken of'
-                                                : ' appear in with'
-                                            }` +
-                                            ' them';
-                                            console.log(explanationText);
-                                            $(`.explanation-${pictureDivName}`).html(explanationText);
-                                        }).fadeIn();
+                                        displayDefaultExplanation(pictureDivName);
                                     } else {
+                                        // Network aeshetics
                                         highlightNode(DISPLAYED_TARGETS[pictureDivName], d.name, clientName, true, false, pictureDivName);
                                         DISPLAYED_TARGETS[pictureDivName] = d.name;
                                         CLICKED_ELEMENT[pictureDivName] = 'node';
-                                        console.log('FUCK');
                                         $(`.explanation-${pictureDivName}`).fadeOut(() => {
                                             console.log('test');
                                             $(`.explanation-${pictureDivName}`).html("OwO<br/>Looks like you don't have any pictures with this person!");
                                         }).fadeIn();
                                     }
-                                    IMG_CHANGE_CONTAINER[pictureDivName] = false;
-                                    ON_CONTAINER[pictureDivName] = false;
-                                    
                                 } else if (clientName !== 'totalPW' && clientName !== 'totalTS') {
                                     if (d.name === DISPLAYED_TARGETS[pictureDivName]) { // clearing the displayed pictures
+                                        // Network aeshetics:
                                         if (CLICKED_ELEMENT[pictureDivName] === 'link') {
                                             DISPLAYED_TARGETS[pictureDivName] = '';
                                             highlightLink({ sourceName: '', targetName: '' }, { sourceName: '', targetName: '' }, false, false, pictureDivName);
                                         }
-                                        IMG_CHANGE_CONTAINER[pictureDivName] = false;
-                                        ON_CONTAINER[pictureDivName] = false;
                                         DISPLAYED_TARGETS[pictureDivName] = '';
                                         CLICKED_ELEMENT[pictureDivName] = '';
                                         highlightNode('', d.name, clientName, false, false, pictureDivName);
-                                    } else {
+                                        
+                                        //Picture to clear
+                                        SECTION_TO_SLIDESHOW_IS_ACTIVE[pictureDivName] = false;
+                                        removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
+                                            displayDefaultExplanation(pictureDivName);
+                                        });
+                                        
+                                    } else { // load a picture
+                                        // Network aeshetics:
                                         highlightNode(DISPLAYED_TARGETS[pictureDivName], d.name, clientName, true, false, pictureDivName);
-                                        $(`.explanation-${pictureDivName}`).fadeOut('fast');
-                                        IMG_CHANGE_CONTAINER[pictureDivName] = true;
                                         CLICKED_ELEMENT[pictureDivName] = 'node';
-                                        ON_CONTAINER[pictureDivName] = false;
                                         DISPLAYED_TARGETS[pictureDivName] = d.name;
-                                        PROMISES[pictureDivName].then(() => {
-                                            ON_CONTAINER[pictureDivName] = true;
-                                            if (IMG_CHANGE_CONTAINER[pictureDivName]) {
-                                                PROMISES[pictureDivName] = slideshow(pictureDivName, imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER, projectPath, storage);
-                                            }
+
+                                        // Picture to display
+                                        $(`.explanation-${pictureDivName}`).fadeOut('fast');
+                                        SECTION_TO_SLIDESHOW_IS_ACTIVE[pictureDivName] = true;
+                                        SECTION_TO_SLIDESHOW_LENGTH[pictureDivName] = imgIDs.length;
+                                        SECTION_TO_IMG_IDS[pictureDivName] = imgIDs;
+                                        const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[pictureDivName];
+                                        const imgId = imgIDs[imgIdIndex];
+                                        removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
+                                            loadImage(pictureDivName, imgId, projectPath, storage)
                                         });
                                     }
                                 } else if (d.name === DISPLAYED_TARGETS[pictureDivName]) {

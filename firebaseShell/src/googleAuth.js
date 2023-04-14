@@ -8,6 +8,7 @@ import {
     totalPWSVG,
     totalTSSVG
 } from "./networkGraphs.js";
+import { updateMidpoints } from "./imageLoader.js";
 import { displayStats } from './stats.js';
 import { drawBarGraph } from "./timeGraph.js";
 import { drawTop3Stats, columnOneColors, columnTwoColors, columnThreeColors } from "./top3Stats.js";
@@ -18,6 +19,8 @@ import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebas
 let CLIENT_NAME;
 let CREDENTIALS;
 let tokenClient;
+
+let STORAGE;
 
 const hdEmailToClientName = {
     'andrewflury@berkeley.edu':'me',
@@ -58,11 +61,8 @@ $('.fbAuthenticateBtn').on('click', () => {
     $('.fbAuthenticateBtn').fadeOut("fast", () => {
         $('.loader').fadeIn("fast");
         signInWithPopup(auth, provider).then(async (_) => {
-            if (error) {
-                throw "Failed to sign in";
-                console.log(error);
-            }
             const storage = getStorage(app);
+            STORAGE = storage;
             const projectMapReference = ref(storage, `data/projectMap.json`);
             getDownloadURL(projectMapReference).then((url) => {
                 $.getJSON(url, (projectMap) => {
@@ -141,6 +141,12 @@ const handleAuthClick = (projectPath, storage) => {
     
 };
 
+
+const getTopAndBottom = (className) => {
+    const rect = $(`.${className}`)[0].getBoundingClientRect();
+    return {bottom: rect.bottom, top:rect.top}
+};
+
 const loadGraphs = (projectPath, storage) => {
     const names = projectPath === 'maui' ? MAUI_NAMES : HD_NAMES;
     const iconPromises = names.map((iconSubject) => new Promise((resolve, reject) => {
@@ -178,10 +184,19 @@ const loadGraphs = (projectPath, storage) => {
     
     
     $('.authenticateSection').fadeOut('fast', () => {
-        $('.scroller').fadeIn("slow");
+        $('.scroller').fadeIn("slow", () => {
+            updateMidpoints({
+                clientPicturedWith: getTopAndBottom("clientPicturedWithSection"),
+                clientTakerSubject: getTopAndBottom("clientTakerSubjectSection"),
+                time: getTopAndBottom("timeSection"),
+                donut: getTopAndBottom("donutSection")
+            });
+        });
     });
     $('.loader').fadeOut();
 }
+
+
 
 const handleAuthError = () => {
     $('.loader').fadeOut();

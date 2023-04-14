@@ -21,11 +21,24 @@ body {
 
 .scroller section {
     scroll-snap-align: start;
-    /* border: 5px solid black; */
     height: 100vh;
-    /* padding-top:2.5vh; */
-    /* padding-bottom: 2.5vh; */
     overflow: hidden;
+}
+
+.sectionTitle {
+    width:100%;
+    font-size: 33px;
+    text-align:center;
+    padding-top: 26px;
+    position: relative;
+}
+
+.totalSectionTitle {
+    width:100%;
+    font-size: 30px;
+    text-align:center;
+    padding-top: 23px;
+    position: relative;
 }
 
 .authenticateSection {
@@ -36,6 +49,32 @@ body {
     align-items: center;
     color:#333;
     z-index: 1;
+}
+
+
+
+.timeGraphTitleUnderline {
+    border-bottom: #ff8600;
+}
+
+.donutGraphTitleUnderline {
+    border-bottom: #00ff42;
+}
+
+.clientTakerSubjectGraphTitleUnderline {
+    border-bottom: #52a8ff;
+}
+
+.clientPicturedWithGraphTitleUnderline {
+    border-bottom: #73c2fb;
+}
+
+.totalPWGraphTitleUnderline {
+    border-bottom: #8e7eff;
+}
+
+.totalTSGraphTitleUnderline {
+    border-bottom: #df00fe;
 }
 
 .authenticateError {
@@ -168,6 +207,15 @@ body {
 	}
 }
 
+.howToPlay {
+    font-size: 26px;
+    margin: 20px;
+    line-height: 1.3;
+    padding-top: 50px;
+    padding-left: 18px;
+    padding-right: 20px;
+}
+
 .overallStatsSection {
     font-size: 39px;
     margin: 20px;
@@ -180,7 +228,10 @@ body {
 
 .overallStatsSection > p {
     position: relative;
-    top: 15%;
+}
+
+.introBlurb4 {
+    font-size: 26px;
 }
 
 .blurbs {
@@ -364,7 +415,6 @@ body {
     transition: width .5s ease, background-color .5s ease;
     -webkit-transition: width .5s ease, background-color .5s ease;
     -moz-transition: width .5s ease, background-color .5s ease;
-    
     margin:auto; /* center the content so it will slide from the midddle to the left and right */
 }
  
@@ -389,9 +439,16 @@ body {
     float: right;
     width: 50%;
     margin:auto;
-    /* margin-right: 1px; */
     height:100%;
 }
+
+.donutDisclaimer {
+    position: relative;
+    bottom: 30px;
+    left: 10px;
+    font: 13px;
+}
+
 
 .centeredSVG {
     position: relative;
@@ -405,6 +462,10 @@ body {
 #donutPhotos {
     float:left;
     width: 50%;
+}
+
+.invisiblePhoto {
+    opacity: 0;
 }
 
 .tooltip {
@@ -421,6 +482,8 @@ body {
 
 .statsSection {
     display: flex;
+    padding-left: 39px;
+    padding-right: 39px;
 }
 
 .statsSection > div {
@@ -547,15 +610,6 @@ span {
     flex-direction: row;
 }
 
-.question {
-    display: flex;
-    gap: 30px;
-    position: relative;
-    margin-top: 30px;
-    margin-bottom:30px;
-    /* z-index: 1; */
-}
-
 .dropdown {
     background-color: #333;
     color: white;
@@ -594,12 +648,6 @@ span {
     position: relative;
     z-index: 5;
 
-}
-
-.questionSection {
-    font-size: 26px;
-    padding:30px;
-    position:relative;
 }
 
 ol {

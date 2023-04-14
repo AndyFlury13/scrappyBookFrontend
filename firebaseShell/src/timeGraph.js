@@ -1,8 +1,12 @@
-import { slideshow } from "./imageLoader.js";
-import { ON_CONTAINER } from "./imageLoader.js";
-import { IMG_CHANGE_CONTAINER } from "./imageLoader.js";
 import { DISPLAYED_TARGETS } from "./imageLoader.js";
-import { PROMISES } from "./imageLoader.js";
+import { 
+    removeImage, 
+    loadImage, 
+    SECTION_TO_SLIDESHOW_IS_ACTIVE,
+    SECTION_TO_SLIDESHOW_LENGTH, 
+    SECTION_TO_SLIDESHOW_INDEX, 
+    SECTION_TO_IMG_IDS 
+} from "./imageLoader.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 import { Rainbow } from "./gradienter.js";
 
@@ -44,13 +48,10 @@ const shortenedDays = ['10', '11', '12', '13', '14', '15', '16', '17', '18', '19
 
 let CURRENT_SUBJECT_OR_TAKER = 'photoTaker';
 $('.slide-in-out-photoTaker').toggleClass('slide');
-// var timeGraphMargin = {top: 30, right: 30, bottom: 70, left: 60},
-//     width = 600 - timeGraphMargin.left - timeGraphMargin.right,
-//     height = 400 - timeGraphMargin.top - timeGraphMargin.bottom;
 const timeGraphWidth = 550;
 const timeGraphHeight = 380;
 const timeGraphMargin = {
-    top: 10, right: 10, bottom: 40, left: 40,
+    top: 10, right: 10, bottom: 70, left: 100,
 };
 
 
@@ -72,6 +73,7 @@ const timeGraphY = d3.scaleLinear()
     .range([timeGraphHeight, 0]);
 const timeGraphYAxis = timeGraphSVG.append('g')
     .attr('class', 'timeGraphYAxis');
+
 const highlightRectangles = (className, oldCategory, newCategory) => {
     if (oldCategory === 'none') {
         d3.selectAll(`.${className}`)
@@ -133,6 +135,23 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
     const TIMES = projectPath === 'maui'
         ? DAYS
         : MONTHS;
+    const xAxisLabel = projectPath === 'maui'
+        ? "Days in February"
+        : "Months";
+    timeGraphSVG.append("text")
+        .attr("transform", "translate(" + (timeGraphWidth/2) + " ," + 430 + ")")
+        .style('fill', 'white')
+        .style("text-anchor", "middle")
+        .style("font-size", "20px")
+        .text(xAxisLabel);
+    timeGraphSVG.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -(timeGraphHeight/2))
+        .attr("y", -45)
+        .style('fill', 'white')
+        .style("font-size", "20px")
+        .style("text-anchor", "middle")
+        .text("Pictures");
     var rainbow = new Rainbow();
     rainbow.setNumberRange(0, TIMES.length);
     rainbow.setSpectrum('#ff8600', '#fffe37');
@@ -205,28 +224,30 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                 .classed('timeRect', true)
                                 .style('cursor', 'pointer')
                                 .on('click', (d) => {
-                                    const imgIDs = d[CURRENT_SUBJECT_OR_TAKER]?.split(',')?.slice(0, -1) ?? [];
-                                    if (d.time === DISPLAYED_TARGETS.time) {
-                                        IMG_CHANGE_CONTAINER.time = false;
-                                        ON_CONTAINER.time = false;
+                                    if (d.time === DISPLAYED_TARGETS.time) { // turn off the visual
+                                        SECTION_TO_SLIDESHOW_IS_ACTIVE["time"] = false;
                                         DISPLAYED_TARGETS.time = '';
                                         highlightRectangles('timeRect', d.time, d.time);
+                                        removeImage('timeDisplayedPhoto', 200).then(() => {
+                                            $('.explanation-time').fadeOut('fast');
+                                        });
                                     } else {
-                                        if (DISPLAYED_TARGETS.time === '') {
+                                        if (DISPLAYED_TARGETS.time === '') { // turn on the visual
                                             highlightRectangles('timeRect', 'none', d.time);
                                         }
-                                        else if (DISPLAYED_TARGETS.time !== d.time) {
+                                        else if (DISPLAYED_TARGETS.time !== d.time) { // Change the visual
                                             highlightRectangles('timeRect', DISPLAYED_TARGETS.time, d.time);
                                         }
-                                        IMG_CHANGE_CONTAINER.time = true;
+                                        const imgIDs = d[CURRENT_SUBJECT_OR_TAKER]?.split(',')?.slice(0, -1) ?? [];
+                                        SECTION_TO_SLIDESHOW_IS_ACTIVE["time"] = true;
+                                        SECTION_TO_SLIDESHOW_LENGTH["time"] = imgIDs.length;
+                                        SECTION_TO_IMG_IDS["time"] = imgIDs;
                                         $('.explanation-time').fadeOut('fast');
-                                        ON_CONTAINER.time = false;
                                         DISPLAYED_TARGETS.time = d.time;
-                                        PROMISES.time.then(() => {
-                                            ON_CONTAINER.time = true;
-                                            if (IMG_CHANGE_CONTAINER.time) {
-                                                PROMISES.time = slideshow('time', imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER, projectPath, storage);
-                                            }
+                                        const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX["time"];
+                                        const imgId = imgIDs[imgIdIndex];
+                                        removeImage(`timeDisplayedPhoto`, 200).then(() => {
+                                            loadImage("time", imgId, projectPath, storage);
                                         });
                                     }
                                 })

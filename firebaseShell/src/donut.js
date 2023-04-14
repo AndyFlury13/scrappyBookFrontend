@@ -1,9 +1,12 @@
 import { 
-    DISPLAYED_TARGETS, 
-    IMG_CHANGE_CONTAINER, 
-    ON_CONTAINER,
-    PROMISES,
-    slideshow 
+    DISPLAYED_TARGETS,
+    loadImage,
+    removeImage,
+    SECTION_TO_SLIDESHOW_INDEX,
+    SECTION_IN_VIEWPORT,
+    SECTION_TO_SLIDESHOW_IS_ACTIVE,
+    SECTION_TO_SLIDESHOW_LENGTH,
+    SECTION_TO_IMG_IDS
 } from "./imageLoader.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
@@ -170,29 +173,29 @@ export const drawDonut = (clientName, storage, projectPath) => {
                         clearTooltip(donutTooltip);
                     })
                     .on('click', (d) => {
-                        const imgIDs = d.data.value.picIDs?.split(',')?.slice(0, -1) ?? [];
-
-                        if (d.data.key === DISPLAYED_TARGETS.donut) {
-                            IMG_CHANGE_CONTAINER.donut = false;
-                            ON_CONTAINER.donut = false;
+                        if (d.data.key === DISPLAYED_TARGETS.donut) { // Clicking the same section, "turn off" visual
                             DISPLAYED_TARGETS.donut = '';
                             highlightDonutSections(d.data.key, d.data.key);
+                            SECTION_TO_SLIDESHOW_IS_ACTIVE["donut"] = false;
+                            removeImage(`donutDisplayedPhoto`, 200).then(() => {
+                                $('.explanation-donut').fadeIn('fast');
+                            });
                         } else {
-                            if (DISPLAYED_TARGETS.donut === '') {
+                            if (DISPLAYED_TARGETS.donut === '') { // nothing displayed, so "turn on" visual
                                 highlightDonutSections('none', d.data.key);
-                            }
-                            else if (DISPLAYED_TARGETS.donut !== d.data.key) {
+                            } else if (DISPLAYED_TARGETS.donut !== d.data.key) { // Visual is on. Changing section
                                 highlightDonutSections(DISPLAYED_TARGETS.donut, d.data.key);
                             }
-                            IMG_CHANGE_CONTAINER.donut = true;
+                            const imgIDs = d.data.value.picIDs?.split(',')?.slice(0, -1) ?? [];
+                            SECTION_TO_SLIDESHOW_IS_ACTIVE["donut"] = true;
+                            SECTION_TO_SLIDESHOW_LENGTH["donut"] = imgIDs.length;
+                            SECTION_TO_IMG_IDS["donut"] = imgIDs;
                             $('.explanation-donut').fadeOut('fast');
-                            ON_CONTAINER.donut = false;
                             DISPLAYED_TARGETS.donut = d.data.key;
-                            PROMISES.donut.then(() => {
-                                ON_CONTAINER.donut = true;
-                                if (IMG_CHANGE_CONTAINER.donut) {
-                                    PROMISES.donut = slideshow('donut', imgIDs, ON_CONTAINER, IMG_CHANGE_CONTAINER, projectPath, storage);
-                                }
+                            const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[SECTION_IN_VIEWPORT];
+                            const imgId = imgIDs[imgIdIndex];
+                            removeImage(`donutDisplayedPhoto`, 200).then(() => {
+                                loadImage(SECTION_IN_VIEWPORT, imgId, projectPath, storage);
                             });
                         }
                     });
