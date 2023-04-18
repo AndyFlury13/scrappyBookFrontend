@@ -42,6 +42,7 @@ const donutSVG = d3.select('#donut')
     .append('g')
     .attr('id', 'donutG')
     .attr('transform', `translate(${donutX},${donutY})`);
+
 const donutTooltip = d3.select('body')
     .append('div')
     .attr('class', 'tooltip')
@@ -120,6 +121,13 @@ var margin = 40
 
 var radius = Math.min(width, height) / 2 - margin
 
+const transitionLabel = (on, targetText) => {
+    const targetOpacity = on ? 1: 0;
+    $('#donutLabel').html(targetText);
+    $('#donutLabel').animate({
+        opacity: targetOpacity
+    }, 200);
+};
 
 // read json data
 export const drawDonut = (clientName, storage, projectPath) => {
@@ -180,11 +188,14 @@ export const drawDonut = (clientName, storage, projectPath) => {
                             removeImage(`donutDisplayedPhoto`, 200).then(() => {
                                 $('.explanation-donut').fadeIn('fast');
                             });
+                            transitionLabel(false, d.data.key);
                         } else {
                             if (DISPLAYED_TARGETS.donut === '') { // nothing displayed, so "turn on" visual
                                 highlightDonutSections('none', d.data.key);
+                                transitionLabel(true, d.data.key);
                             } else if (DISPLAYED_TARGETS.donut !== d.data.key) { // Visual is on. Changing section
                                 highlightDonutSections(DISPLAYED_TARGETS.donut, d.data.key);
+                                transitionLabel(true, d.data.key);
                             }
                             const imgIDs = d.data.value.picIDs?.split(',')?.slice(0, -1) ?? [];
                             SECTION_TO_SLIDESHOW_IS_ACTIVE["donut"] = true;

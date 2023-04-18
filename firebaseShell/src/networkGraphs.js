@@ -337,7 +337,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                     const networkData = dataAndMostPicIds.networkData;
                     const mostPicIds = dataAndMostPicIds.mostPicIds;
 
-                    const maxLinkWidth = 10;
+                    const maxLinkWidth = 13;
                     // Initialize the links
                     const networkDataLink = svg
                         .selectAll('line')
@@ -422,7 +422,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                             }
                         });
                         const config = {
-                            avatar_size: 130, // define the size of the circle radius
+                            avatar_size: 150, // define the size of the circle radius
                         };
                         if (!defsLoaded) {
                             const body = d3.select('body');
@@ -437,7 +437,9 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                     .append('svg:image')
                                     .attr('href', d.url)
                                     .attr('height', '1')
-                                    .attr('width', '1');
+                                    .attr('width', '1')
+                                    .attr('transform', 'translate(' + translate[0] +','+ y+')')
+                                    .;
                             });
                             defsLoaded = true;
                         }
@@ -560,13 +562,12 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                             .strength(() => 0))
                             .on('tick', totalTicked)
                             .alphaTarget(0.1);
-                    }
-                    else {
+                    } else {
                         d3.forceSimulation(networkData.nodes)
                             .force('link', d3.forceLink() // This force provides links between nodes
-                            .id((d) => d.id) // This provide  the id of a node
+                            .id((d) => d.id) // This provides the id of a node
                             .links(networkData.links))
-                            .force('charge', d3.forceManyBody().strength(-4500)) // This adds repulsion between nodes. Play with the -400 for the repulsion strength
+                            .force('charge', d3.forceManyBody().strength(-5800)) // This adds repulsion between nodes. Play with the -400 for the repulsion strength
                             .force('center', d3.forceCenter(networkWidth / 2, networkHeight / 2)) // This force attracts nodes to the center of the svg area
                             .on('tick', networkTicked)
                             .alphaTarget(0.1);

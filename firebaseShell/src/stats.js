@@ -32,11 +32,14 @@ function counterControl(target, number) {
 }
 export const displayStats = (clientName, storage, storagePath) => {
     const reference = storageRef(storage, `data/${storagePath}/overallStats.json`);
+    const openingSentence = storagePath === 'maui'
+        ? 'On the Maui trip'
+        : 'Since we started hanging out on Jiu\'s 22nd birthday';
     getDownloadURL(reference)
         .then((url) => {
             $.getJSON(url, (data) => {
-                $('.introBlurb0').html(`Hi ${clientName}! Over the past year, we uploaded <span class='userNumBar0'></span><span class='userImgNumBar'></span>`
-                    + '</span> pictures to the Hilledwight photo drive.').promise().done(() => {
+                $('.introBlurb0').html(`Hi ${clientName}! ${openingSentence}, we uploaded <span class='userNumBar0'></span><span class='userImgNumBar'></span>`
+                    + '</span> pictures to our shared album.').promise().done(() => {
                     $('.introBlurb0').fadeIn(4000, () => {
                         $('.introBlurb1').html("You uploaded <span class='userNumBar1'></span><span class='userImgNumBar'></span> pictures,").promise().done(() => {
                             $('.introBlurb1').fadeIn(3000, () => {
@@ -46,14 +49,16 @@ export const displayStats = (clientName, storage, storagePath) => {
                                             $('.introBlurb3').fadeIn(2000, () => {
                                                 $('.introBlurb4').html(
                                                     `<s>if you had a UX engineer you wouldn't need this section</s><br>
-                                                    How to explore this webapp!
+                                                    How to explore this webapp!<br>
                                                     This is an arrow key friendly household. No love for AWSD.
                                                     <ul>
                                                         <li>You can use the up and down arrow key (or scroll) to navigate between sections.</li>
                                                         <li>Once an image is displayed, you can use the left and right arrow keys to move through the slideshow.</li>
                                                     </ul>`
                                                 ).promise().done(()=> {
-                                                    $('.introBlurb4').fadeIn(2000);
+                                                    setTimeout(() => {
+                                                        $('.introBlurb4').fadeIn(1000);
+                                                    }, 200);
                                                 })
                                             });
                                         });
