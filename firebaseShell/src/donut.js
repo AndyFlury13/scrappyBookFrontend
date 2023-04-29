@@ -6,7 +6,8 @@ import {
     SECTION_IN_VIEWPORT,
     SECTION_TO_SLIDESHOW_IS_ACTIVE,
     SECTION_TO_SLIDESHOW_LENGTH,
-    SECTION_TO_IMG_IDS
+    SECTION_TO_IMG_IDS,
+    logIfNullImageId
 } from "./imageLoader.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
@@ -205,7 +206,9 @@ export const drawDonut = (clientName, storage, projectPath) => {
                             DISPLAYED_TARGETS.donut = d.data.key;
                             const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[SECTION_IN_VIEWPORT];
                             const imgId = imgIDs[imgIdIndex];
+                            logIfNullImageId(imgId, imgIdIndex, imgIDs);
                             removeImage(`donutDisplayedPhoto`, 200).then(() => {
+                                console.log($('#donutDisplayedPhoto'));
                                 loadImage(SECTION_IN_VIEWPORT, imgId, projectPath, storage);
                             });
                         }

@@ -71,7 +71,7 @@
             </section>
 
             <section class="timeSection">
-                <div class="sectionTitle">Your pictures as a <span class="timeGraphTitleUnderline">bar graph</span></div>
+                <div class="sectionTitle">Your pictures as <span class="timeGraphTitleUnderline">a bar graph</span></div>
                 <div id="timeGraphAndButtons">
                     <div class="timeGraphButtons">
                         <div id = 'timeGraphPhotoTakerButton'>As the photographer<span class='slide-in-out-photoTaker'></span></div>
@@ -81,6 +81,7 @@
                 </div>
                 <div id="timePhotos" class="photoContainer">
                     <div class="explanation explanation-time">Click graph elements to load images</div>
+                    <img id="timeDisplayedPhoto" class="invisiblePhoto" src=""/>
                 </div>
             </section>
 
@@ -89,10 +90,12 @@
                 <div id="donutPhotos" class="photoContainer">
                     <div class="explanation explanation-donut">
                         Click the graph elements to load images.<br/>
-                        Each section represents a category of picture* in the library.
+                        Each section represents a category of picture in the library.
                     </div>
+                    <img id="donutDisplayedPhoto" class="invisiblePhoto" src=""/>
                 </div>
                 <div id="donut"><div id="donutLabel">default</div></div>
+                
             </section>
 
             <section class="clientTakerSubjectSection">
@@ -103,6 +106,7 @@
                         Click the graph elements to load images.<br/>
                         Every edge from you to someone else represents pictures you've taken of them.
                     </div>
+                    <img id="clientTakerSubjectDisplayedPhoto" class="invisiblePhoto" src=""/>
                 </div>
             </section>
 
@@ -113,6 +117,7 @@
                         Click the graph elements to load images.<br/>
                         Every edge from you to someone else represents pictures you appear in with them.
                     </div>
+                    <img id="clientPicturedWithDisplayedPhoto" class="invisiblePhoto" src=""/>
                 </div>
                 <div id="clientPicturedWithGraph"></div>
             </section>

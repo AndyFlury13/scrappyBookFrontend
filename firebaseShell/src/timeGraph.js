@@ -1,4 +1,4 @@
-import { DISPLAYED_TARGETS } from "./imageLoader.js";
+import { DISPLAYED_TARGETS, logIfNullImageId } from "./imageLoader.js";
 import { 
     removeImage, 
     loadImage, 
@@ -41,6 +41,8 @@ const DAYS = [
     {name: 'feb18', color:''},
     {name: 'feb19', color:''},
 ]
+
+var CLICKED_TIME_ELEMENT;
 
 
 const shortenedMonths = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
@@ -129,6 +131,11 @@ export const getNumberOfIds = (idString) => {
 }
 
 export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) => {
+    // Reset the visual
+    if (SECTION_TO_SLIDESHOW_IS_ACTIVE['time']) {
+        resetTimeSection(DISPLAYED_TARGETS.time);
+    }
+
     const shortenedTimes = projectPath === 'maui'
         ? shortenedDays
         : shortenedMonths;
@@ -225,12 +232,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                 .style('cursor', 'pointer')
                                 .on('click', (d) => {
                                     if (d.time === DISPLAYED_TARGETS.time) { // turn off the visual
-                                        SECTION_TO_SLIDESHOW_IS_ACTIVE["time"] = false;
-                                        DISPLAYED_TARGETS.time = '';
-                                        highlightRectangles('timeRect', d.time, d.time);
-                                        removeImage('timeDisplayedPhoto', 200).then(() => {
-                                            $('.explanation-time').fadeOut('fast');
-                                        });
+                                        resetTimeSection(d.time);
                                     } else {
                                         if (DISPLAYED_TARGETS.time === '') { // turn on the visual
                                             highlightRectangles('timeRect', 'none', d.time);
@@ -238,6 +240,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                         else if (DISPLAYED_TARGETS.time !== d.time) { // Change the visual
                                             highlightRectangles('timeRect', DISPLAYED_TARGETS.time, d.time);
                                         }
+                                        CLICKED_TIME_ELEMENT = d;
                                         const imgIDs = d[CURRENT_SUBJECT_OR_TAKER]?.split(',')?.slice(0, -1) ?? [];
                                         SECTION_TO_SLIDESHOW_IS_ACTIVE["time"] = true;
                                         SECTION_TO_SLIDESHOW_LENGTH["time"] = imgIDs.length;
@@ -246,6 +249,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                         DISPLAYED_TARGETS.time = d.time;
                                         const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX["time"];
                                         const imgId = imgIDs[imgIdIndex];
+                                        logIfNullImageId(imgId, imgIdIndex, imgIDs);
                                         removeImage(`timeDisplayedPhoto`, 200).then(() => {
                                             loadImage("time", imgId, projectPath, storage);
                                         });
@@ -264,3 +268,12 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
             });
         })
 };
+
+const resetTimeSection = (elementTime) => {
+    SECTION_TO_SLIDESHOW_IS_ACTIVE["time"] = false;
+    DISPLAYED_TARGETS.time = '';
+    highlightRectangles('timeRect', elementTime, elementTime);
+    removeImage('timeDisplayedPhoto', 200).then(() => {
+        $('.explanation-time').fadeIn('fast');
+    });
+}

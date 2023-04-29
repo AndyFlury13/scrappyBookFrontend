@@ -1,7 +1,5 @@
 import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
-let LOCKED = false;
-
 export let SECTION_IN_VIEWPORT = "other";
 
 export const updateMidpoints = (sectionYMidpoints) => {
@@ -90,21 +88,23 @@ let PROJECT_PATH;
 let STORAGE;
 
 export const loadImage = (photoDivName, imgID, projectPath, storage) => {
+    console.log(photoDivName);
     PROJECT_PATH = projectPath;
     STORAGE = storage;
-    const imageRef = ref(storage, `photos/${projectPath}/${imgID}.jpg`)
+    const imageRef = ref(storage, `photos/${projectPath}/${imgID}.jpg`);
     getDownloadURL(imageRef).then((url) => {
-        $(`<img id='${photoDivName}DisplayedPhoto' class='invisiblePhoto' src='${url}'/>`).prependTo(`#${photoDivName}Photos`);
+        $(`#${photoDivName}DisplayedPhoto`).attr('src', url);
+        console.log($(`#${photoDivName}DisplayedPhoto`)[0]);
         $(`#${photoDivName}DisplayedPhoto`).on('load', () => {
+            console.log('test');
             $(`#${photoDivName}DisplayedPhoto`).animate({
                 opacity: 1,
-            }, 400);
+            }, 300);
         });
     });
 };
 
 export const removeImage = (pictureToRemoveId, timeToDisappear) => new Promise((resolve) => {
-    LOCKED = true;
     const pictureToRemove = $(`#${pictureToRemoveId}`);
     if (pictureToRemove.length === 0) {
         resolve(null);
@@ -112,7 +112,7 @@ export const removeImage = (pictureToRemoveId, timeToDisappear) => new Promise((
     $(`#${pictureToRemoveId}`).animate({
         opacity: 0,
     }, timeToDisappear, () => {
-        $(`#${pictureToRemoveId}`).remove();
+        $(`#${pictureToRemoveId}`).attr('src', '');
         resolve(null);
     });
 });
@@ -136,6 +136,7 @@ const imageChanger = (e) => {
             SECTION_TO_SLIDESHOW_INDEX[SECTION_IN_VIEWPORT] = nextSlideShowIndex;
             // const imgToRemoveID = imgIds[slideshowIndex];
             const imgToDisplayID = imgIds[nextSlideShowIndex];
+            logIfNullImageId(imgToDisplayID, nextSlideShowIndex, imgIds);
             removeImage(`${SECTION_IN_VIEWPORT}DisplayedPhoto`, 200).then(() => {
                 loadImage(SECTION_IN_VIEWPORT, imgToDisplayID, PROJECT_PATH, STORAGE);
             });
@@ -145,45 +146,11 @@ const imageChanger = (e) => {
 
 document.onkeydown = imageChanger;
 
-
-export const slideshow = (photoDivName, imgIDs, slideshowOnContainer, imgChangeContainer, projectPath, storage) => new Promise((resolve) => {
-    
-    
-    let imgIDsI = 0;
-    let timer = 0;
-    const imageDisplayLength = 350;
-    let displayedImgID = imgIDs[imgIDsI];
-    loadImage(photoDivName, displayedImgID, projectPath, storage);
-    const imgCycler = setInterval(() => {
-        let slideshowOn = slideshowOnContainer[photoDivName];
-        if (!slideshowOn) {
-            if (!LOCKED) {
-                clearInterval(imgCycler);
-                removeImage(displayedImgID, 200).then(() => {
-                    LOCKED = false;
-                    if (!imgChangeContainer[photoDivName]) {
-                        $(`.explanation-${photoDivName}`).fadeIn();
-                    }
-                    resolve(imgChangeContainer[photoDivName]);
-                });
-            }
-        }
-        else if (timer > imageDisplayLength) {
-            timer = 0;
-            imgIDsI += 1;
-            if (imgIDsI === imgIDs.length) {
-                imgIDsI = 0;
-            }
-            removeImage(displayedImgID, 200).then(() => {
-                displayedImgID = imgIDs[imgIDsI];
-                slideshowOn = slideshowOnContainer[photoDivName];
-                if (slideshowOn) {
-                    loadImage(photoDivName, displayedImgID, projectPath, storage).then(() => {
-                        LOCKED = false;
-                    });
-                }
-            });
-        }
-        timer += 1;
-    }, 10);
-});
+export const logIfNullImageId = (imgId, imgIdIndex, imgIDs) => {
+    if (typeof imgId === 'undefined') {
+        console.log('Null img id');
+        console.log(`Img index: ${imgIdIndex}`);
+        console.log(`Img ids:`);
+        console.log(imgIDs);
+    }
+}

@@ -5,7 +5,8 @@ import {
     SECTION_TO_SLIDESHOW_IS_ACTIVE,
     SECTION_TO_SLIDESHOW_LENGTH,
     loadImage,
-    removeImage
+    removeImage,
+    logIfNullImageId
 } from "./imageLoader.js";
 import {getNumberOfIds} from "./timeGraph.js";
 import { getDownloadURL, ref as storageRef } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
@@ -385,6 +386,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                     SECTION_TO_IMG_IDS[pictureDivName] = imgIDs;
                                     const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[pictureDivName];
                                     const imgId = imgIDs[imgIdIndex];
+                                    logIfNullImageId(imgID, imgIdIndex, imgIDs);
                                     removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
                                         loadImage(pictureDivName, imgId, projectPath, storage)
                                     });
@@ -437,9 +439,8 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                     .append('svg:image')
                                     .attr('href', d.url)
                                     .attr('height', '1')
-                                    .attr('width', '1')
-                                    .attr('transform', 'translate(' + translate[0] +','+ y+')')
-                                    .;
+                                    .attr('width', '1');
+                                    // .attr('transform', 'translate(' + translate[0] +','+ y+')');
                             });
                             defsLoaded = true;
                         }
@@ -506,6 +507,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                         SECTION_TO_IMG_IDS[pictureDivName] = imgIDs;
                                         const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[pictureDivName];
                                         const imgId = imgIDs[imgIdIndex];
+                                        logIfNullImageId(imgId, imgIdIndex, imgIDs);
                                         removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
                                             loadImage(pictureDivName, imgId, projectPath, storage)
                                         });
@@ -567,7 +569,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                             .force('link', d3.forceLink() // This force provides links between nodes
                             .id((d) => d.id) // This provides the id of a node
                             .links(networkData.links))
-                            .force('charge', d3.forceManyBody().strength(-5800)) // This adds repulsion between nodes. Play with the -400 for the repulsion strength
+                            .force('charge', d3.forceManyBody().strength(-5000)) // This adds repulsion between nodes. Play with the -400 for the repulsion strength
                             .force('center', d3.forceCenter(networkWidth / 2, networkHeight / 2)) // This force attracts nodes to the center of the svg area
                             .on('tick', networkTicked)
                             .alphaTarget(0.1);
