@@ -80,8 +80,9 @@
                     <div id="timeGraph"></div>
                 </div>
                 <div id="timePhotos" class="photoContainer">
-                    <div class="explanation explanation-time">Click graph elements to load images</div>
+                    <div class="explanation explanation-time">Click graph elements to load images. Use the arrow keys to move through the slideshow</div>
                     <img id="timeDisplayedPhoto" class="invisiblePhoto" src=""/>
+                    <div class="timeSlideshowCounter slideshowCounter"></div>
                 </div>
             </section>
 
@@ -89,10 +90,11 @@
                 <div class="sectionTitle">Your pictures as <span class="donutGraphTitleUnderline">a donut</span></div>
                 <div id="donutPhotos" class="photoContainer">
                     <div class="explanation explanation-donut">
-                        Click the graph elements to load images.<br/>
-                        Each section represents a category of picture in the library.
+                        Each section represents a category of picture in the library (according to Google).<br/>
+                        Click the graph elements to load images. Use the arrow keys to move through the slideshow.
                     </div>
                     <img id="donutDisplayedPhoto" class="invisiblePhoto" src=""/>
+                    <div class="donutSlideshowCounter slideshowCounter"></div>
                 </div>
                 <div id="donut"><div id="donutLabel">default</div></div>
                 
@@ -103,10 +105,11 @@
                 <div id="clientTakerSubjectGraph"></div>
                 <div class="photoContainer" id="clientTakerSubjectPhotos">
                     <div class="explanation explanation-clientTakerSubject">
-                        Click the graph elements to load images.<br/>
-                        Every edge from you to someone else represents pictures you've taken of them.
+                        Every edge from you to someone else represents <i>pictures you've taken of them</i>.<br/>
+                        Click the graph elements to load images.
                     </div>
                     <img id="clientTakerSubjectDisplayedPhoto" class="invisiblePhoto" src=""/>
+                    <div class="clientTakerSubjectSlideshowCounter slideshowCounter"></div>
                 </div>
             </section>
 
@@ -114,10 +117,11 @@
                 <div class="totalSectionTitle">Your pictures as <span class="totalPWGraphTitleUnderline">the Beijing subway map</span></div>
                 <div class="photoContainer" id="clientPicturedWithPhotos">
                     <div class="explanation explanation-clientPicturedWith">
-                        Click the graph elements to load images.<br/>
-                        Every edge from you to someone else represents pictures you appear in with them.
+                        Every edge from you to someone else represents <i>pictures you appear in with that person</i>.<br/>
+                        Click the graph elements to load images.
                     </div>
                     <img id="clientPicturedWithDisplayedPhoto" class="invisiblePhoto" src=""/>
+                    <div class="clientPicturedWithSlideshowCounter slideshowCounter"></div>
                 </div>
                 <div id="clientPicturedWithGraph"></div>
             </section>
@@ -127,8 +131,8 @@
                 <div class="networkStats PW">
                     <div class="explanation explanation-totalPW">
                         <p>
-                            Click the graph edges to load stats.<br/>
                             An edge between two people represents <i>pictures they are in together</i>.<br/>
+                            Click the graph edges to load stats.<br/>
                             (Clicking the nodes doesn't do anything but I think it looks pretty)
                         </p>
                     </div>
@@ -140,8 +144,8 @@
                 <div class="networkStats TS">
                     <div class="explanation explanation-totalTS">
                         <p>
-                            Click on the graph edges to load stats.<br/>
                             Every edge between two people represents <i>pictures they've taken of each other</i>.<br/>
+                            Click on the graph edges to load stats.<br/>
                             (Clicking the nodes doesn't do anything but I think it looks pretty)
                         </p>
                     </div>

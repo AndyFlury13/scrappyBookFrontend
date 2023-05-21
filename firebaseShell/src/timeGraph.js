@@ -132,6 +132,8 @@ export const getNumberOfIds = (idString) => {
 
 export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) => {
     // Reset the visual
+    $('.timeSlideshowCounter').fadeOut();
+    SECTION_TO_SLIDESHOW_INDEX['time'] = 0;
     if (SECTION_TO_SLIDESHOW_IS_ACTIVE['time']) {
         resetTimeSection(DISPLAYED_TARGETS.time);
     }
@@ -233,6 +235,7 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                 .on('click', (d) => {
                                     if (d.time === DISPLAYED_TARGETS.time) { // turn off the visual
                                         resetTimeSection(d.time);
+                                        $('.timeSlideshowCounter').fadeOut();
                                     } else {
                                         if (DISPLAYED_TARGETS.time === '') { // turn on the visual
                                             highlightRectangles('timeRect', 'none', d.time);
@@ -241,19 +244,21 @@ export const drawBarGraph = (clientName, subjectOrTaker, storage, projectPath) =
                                             highlightRectangles('timeRect', DISPLAYED_TARGETS.time, d.time);
                                         }
                                         CLICKED_TIME_ELEMENT = d;
-                                        const imgIDs = d[CURRENT_SUBJECT_OR_TAKER]?.split(',')?.slice(0, -1) ?? [];
+                                        const imgIds = d[CURRENT_SUBJECT_OR_TAKER]?.split(',')?.slice(0, -1) ?? [];
                                         SECTION_TO_SLIDESHOW_IS_ACTIVE["time"] = true;
-                                        SECTION_TO_SLIDESHOW_LENGTH["time"] = imgIDs.length;
-                                        SECTION_TO_IMG_IDS["time"] = imgIDs;
+                                        SECTION_TO_SLIDESHOW_LENGTH["time"] = imgIds.length;
+                                        SECTION_TO_IMG_IDS["time"] = imgIds;
                                         $('.explanation-time').fadeOut('fast');
                                         DISPLAYED_TARGETS.time = d.time;
-                                        const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX["time"];
-                                        const imgId = imgIDs[imgIdIndex];
-                                        logIfNullImageId(imgId, imgIdIndex, imgIDs);
+                                        const imgId = imgIds[0];
+                                        logIfNullImageId(imgId, 0, imgIds);
                                         removeImage(`timeDisplayedPhoto`, 200).then(() => {
                                             loadImage("time", imgId, projectPath, storage);
                                         });
+                                        $('.timeSlideshowCounter').html(`${1} / ${imgIds.length}`);
+                                        $('.timeSlideshowCounter').fadeIn();
                                     }
+                                    SECTION_TO_SLIDESHOW_INDEX['time'] = 0;
                                 })
                                 .merge(u)
                                 .transition()

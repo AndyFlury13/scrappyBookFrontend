@@ -190,6 +190,7 @@ export const drawDonut = (clientName, storage, projectPath) => {
                                 $('.explanation-donut').fadeIn('fast');
                             });
                             transitionLabel(false, d.data.key);
+                            $('.donutSlideshowCounter').fadeOut();
                         } else {
                             if (DISPLAYED_TARGETS.donut === '') { // nothing displayed, so "turn on" visual
                                 highlightDonutSections('none', d.data.key);
@@ -198,20 +199,22 @@ export const drawDonut = (clientName, storage, projectPath) => {
                                 highlightDonutSections(DISPLAYED_TARGETS.donut, d.data.key);
                                 transitionLabel(true, d.data.key);
                             }
-                            const imgIDs = d.data.value.picIDs?.split(',')?.slice(0, -1) ?? [];
+                            const imgIds = d.data.value.picIDs?.split(',')?.slice(0, -1) ?? [];
                             SECTION_TO_SLIDESHOW_IS_ACTIVE["donut"] = true;
-                            SECTION_TO_SLIDESHOW_LENGTH["donut"] = imgIDs.length;
-                            SECTION_TO_IMG_IDS["donut"] = imgIDs;
+                            SECTION_TO_SLIDESHOW_LENGTH["donut"] = imgIds.length;
+                            SECTION_TO_IMG_IDS["donut"] = imgIds;
                             $('.explanation-donut').fadeOut('fast');
                             DISPLAYED_TARGETS.donut = d.data.key;
-                            const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[SECTION_IN_VIEWPORT];
-                            const imgId = imgIDs[imgIdIndex];
-                            logIfNullImageId(imgId, imgIdIndex, imgIDs);
+                            const imgId = imgIds[0];
+                            logIfNullImageId(imgId, 0, imgIds);
                             removeImage(`donutDisplayedPhoto`, 200).then(() => {
                                 console.log($('#donutDisplayedPhoto'));
                                 loadImage(SECTION_IN_VIEWPORT, imgId, projectPath, storage);
                             });
+                            $('.donutSlideshowCounter').html(`${1} / ${imgIds.length}`);
+                            $('.donutSlideshowCounter').fadeIn();
                         }
+                        SECTION_TO_SLIDESHOW_INDEX['donut'] = 0;
                     });
         });
     });

@@ -134,23 +134,26 @@ const imageChanger = (e) => {
                                 : -1;
             const nextSlideShowIndex = mod(slideshowIndex + increment, slideshowLength);
             SECTION_TO_SLIDESHOW_INDEX[SECTION_IN_VIEWPORT] = nextSlideShowIndex;
-            // const imgToRemoveID = imgIds[slideshowIndex];
             const imgToDisplayID = imgIds[nextSlideShowIndex];
             logIfNullImageId(imgToDisplayID, nextSlideShowIndex, imgIds);
             removeImage(`${SECTION_IN_VIEWPORT}DisplayedPhoto`, 200).then(() => {
                 loadImage(SECTION_IN_VIEWPORT, imgToDisplayID, PROJECT_PATH, STORAGE);
+                $(`.${SECTION_IN_VIEWPORT}SlideshowCounter`).html(`${nextSlideShowIndex+1} / ${imgIds.length}`);
             });
+            console.log(SECTION_IN_VIEWPORT);
+            $(`.${SECTION_IN_VIEWPORT}SlideshowCounter`).html(`${nextSlideShowIndex+1} / ${imgIds.length}`);
+            $(`.${SECTION_IN_VIEWPORT}SlideshowCounter`).fadeIn();
         }
     }
 }
 
 document.onkeydown = imageChanger;
 
-export const logIfNullImageId = (imgId, imgIdIndex, imgIDs) => {
+export const logIfNullImageId = (imgId, imgIdIndex, imgIds) => {
     if (typeof imgId === 'undefined') {
         console.log('Null img id');
         console.log(`Img index: ${imgIdIndex}`);
         console.log(`Img ids:`);
-        console.log(imgIDs);
+        console.log(imgIds);
     }
 }

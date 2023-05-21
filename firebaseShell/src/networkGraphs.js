@@ -312,12 +312,12 @@ const clearNetworkStats = (clientName) => {
 
 const displayDefaultExplanation = (pictureDivName) => {
     $(`.explanation-${pictureDivName}`).fadeOut(() => {
-        const explanationText = 'Click the graph elements to load images.<br/>Every edge from you to someone else represents pictures you' +
+        const explanationText = 'Click the graph elements to load images.<br/>Every edge from you to someone else represents <i>pictures you' +
         `${pictureDivName === 'clientTakerSubject' 
             ? '\'ve taken of'
             : ' appear in with'
         }` +
-        ' them';
+        ' them</i>.';
         $(`.explanation-${pictureDivName}`).html(explanationText);
     }).fadeIn();
 }
@@ -356,7 +356,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         return width;
                     })
                         .on('click', (d) => {
-                            const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];;
+                            const imgIds = d.picIDs?.split(',')?.slice(0, -1) ?? [];;
                             if (clientName !== 'totalPW' && clientName !== 'totalTS') { // individual graphs
                                 if (d.targetName === DISPLAYED_TARGETS[pictureDivName]) { // turn off visual
                                     // Network aeshetics
@@ -382,11 +382,11 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                     // Picture stuff
                                     SECTION_TO_SLIDESHOW_IS_ACTIVE[pictureDivName] = true;
                                     $(`.explanation-${pictureDivName}`).fadeOut('fast');
-                                    SECTION_TO_SLIDESHOW_LENGTH[pictureDivName] = imgIDs.length;
-                                    SECTION_TO_IMG_IDS[pictureDivName] = imgIDs;
+                                    SECTION_TO_SLIDESHOW_LENGTH[pictureDivName] = imgIds.length;
+                                    SECTION_TO_IMG_IDS[pictureDivName] = imgIds;
                                     const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[pictureDivName];
-                                    const imgId = imgIDs[imgIdIndex];
-                                    logIfNullImageId(imgID, imgIdIndex, imgIDs);
+                                    const imgId = imgIds[imgIdIndex];
+                                    logIfNullImageId(imgID, 0, imgIds);
                                     removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
                                         loadImage(pictureDivName, imgId, projectPath, storage)
                                     });
@@ -401,7 +401,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                         displayTSStats(d);
                                     }
                                     else {
-                                        displayPWStats(imgIDs);
+                                        displayPWStats(imgIds);
                                     }
                                     CLICKED_ELEMENT[pictureDivName] = 'link';
                                     DISPLAYED_TARGETS[pictureDivName] = d.sourceName;
@@ -416,7 +416,7 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                     displayTSStats(d);
                                 }
                                 else {
-                                    displayPWStats(imgIDs);
+                                    displayPWStats(imgIds);
                                 }
                                 DISPLAYED_TARGETS[pictureDivName] = d.targetName;
                                 CLICKED_ELEMENT[pictureDivName] = 'link';
@@ -460,8 +460,8 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                         .style('cursor', (d) => d.name === clientName ? 'default' : 'pointer')
                         .on('click', (d) => {
                             if (d.name !== clientName) {
-                                const imgIDs = d.picIDs?.split(',')?.slice(0, -1) ?? [];
-                                if (imgIDs.length === 0) { // Clicking on a node without an edge
+                                const imgIds = d.picIDs?.split(',')?.slice(0, -1) ?? [];
+                                if (imgIds.length === 0) { // Clicking on a node without an edge
                                     if (d.name === DISPLAYED_TARGETS[pictureDivName]) { // clearing the display
                                         highlightNode('', d.name, clientName, false, false, pictureDivName);
                                         DISPLAYED_TARGETS[pictureDivName] = '';
@@ -490,9 +490,11 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                         
                                         //Picture to clear
                                         SECTION_TO_SLIDESHOW_IS_ACTIVE[pictureDivName] = false;
+                                        SECTION_TO_SLIDESHOW_INDEX[pictureDivName] = 0;
                                         removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
                                             displayDefaultExplanation(pictureDivName);
                                         });
+                                        $(`.${pictureDivName}SlideshowCounter`).fadeOut();
                                         
                                     } else { // load a picture
                                         // Network aeshetics:
@@ -503,14 +505,16 @@ export const drawNetwork = (clientName, dataFileName, svg, pictureDivName, stora
                                         // Picture to display
                                         $(`.explanation-${pictureDivName}`).fadeOut('fast');
                                         SECTION_TO_SLIDESHOW_IS_ACTIVE[pictureDivName] = true;
-                                        SECTION_TO_SLIDESHOW_LENGTH[pictureDivName] = imgIDs.length;
-                                        SECTION_TO_IMG_IDS[pictureDivName] = imgIDs;
-                                        const imgIdIndex = SECTION_TO_SLIDESHOW_INDEX[pictureDivName];
-                                        const imgId = imgIDs[imgIdIndex];
-                                        logIfNullImageId(imgId, imgIdIndex, imgIDs);
+                                        SECTION_TO_SLIDESHOW_LENGTH[pictureDivName] = imgIds.length;
+                                        SECTION_TO_IMG_IDS[pictureDivName] = imgIds;
+                                        const imgId = imgIds[0];
+                                        logIfNullImageId(imgId, 0, imgIds);
                                         removeImage(`${pictureDivName}DisplayedPhoto`, 200).then(() => {
                                             loadImage(pictureDivName, imgId, projectPath, storage)
                                         });
+                                        SECTION_TO_SLIDESHOW_INDEX[pictureDivName] = 0;
+                                        $(`.${pictureDivName}SlideshowCounter`).html(`${1} / ${imgIds.length}`);
+                                        $(`.${pictureDivName}SlideshowCounter`).fadeIn();
                                     }
                                 } else if (d.name === DISPLAYED_TARGETS[pictureDivName]) {
                                     highlightNode('', '', clientName, false, true, pictureDivName);
